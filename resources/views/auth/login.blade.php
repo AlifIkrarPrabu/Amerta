@@ -71,7 +71,7 @@
     {{-- Top Section: Hello! Welcome to D'Amerta Swim --}}
     <div class="w-full max-w-sm text-center mb-8 relative">
         <h1 class="text-4xl md:text-5xl font-bold text-black mb-2 relative z-10">Hello Amertans!</h1>
-        <p class="text-lg md:text-xl text-black relative z-10">Welcome to D'Amerta Swim</p>
+        <p class="text-lg md:text-xl text-black relative z-10">Welcome To D'Amerta Swim</p>
 
         {{-- Contoh elemen dekoratif (daun dan pot) --}}
         <div class="absolute -top-12 -left-16 transform rotate-12 text-green-700 opacity-20 hidden md:block">
