@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\AthleteController; 
 use App\Http\Controllers\Admin\UserController; 
+use App\Http\Controllers\Coach\CoachController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -71,3 +72,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Prefix 'coach' berarti URL akan menjadi /coach/dashboard dan /coach/presensi
+    Route::prefix('coach')->group(function () {
+        
+        // Halaman utama dashboard
+        Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
+        
+        // Route untuk menyimpan presensi (Ini yang tadi menyebabkan error)
+        // Pastikan name('presensi.store') sesuai dengan yang dipanggil di form action pada blade
+        Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
+        
+    });
