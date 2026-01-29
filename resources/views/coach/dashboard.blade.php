@@ -164,39 +164,52 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            @forelse($attendanceHistory ?? [] as $history)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
-                                    {{ \Carbon\Carbon::parse($history->tanggal)->format('d M Y') }}
-                                </td>
-                                <td class="px-6 py-4 text-gray-600 italic">
-                                    {{ $history->tempat }}
-                                </td>
-                                <td class="px-6 py-4 text-gray-600">
-                                    <span class="truncate block max-w-xs">{{ $history->materi ?? '-' }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-1">
-                                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                                            {{ $history->athletes_count ?? 0 }} Atlet
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                                        Detail
-                                    </button>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-400">
-                                    Belum ada riwayat presensi tersimpan.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+@forelse($attendanceHistory ?? [] as $history)
+<tr class="hover:bg-gray-50 transition">
+<td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700">
+{{ \Carbon\Carbon::parse($history->tanggal)->format('d M Y') }}
+</td>
+<td class="px-6 py-4 text-gray-600 italic">
+{{ $history->tempat }}
+</td>
+<td class="px-6 py-4 text-gray-600">
+<span class="truncate block max-w-xs">{{ $history->materi ?? '-' }}</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1">
+<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+{{ $history->athletes_count ?? 0 }} Atlet
+</span>
+</div>
+</td>
+<td class="px-6 py-4">
+{{-- Form Hapus --}}
+<form action="{{ route('coach.attendance.destroy') }}" method="POST"
+onsubmit="return confirm('Apakah Anda yakin ingin menghapus data presensi sesi ini?')">
+@csrf
+@method('DELETE')
+
+            {{-- Data Identitas Sesi untuk dicocokkan di Controller --}}
+            <input type="hidden" name="tanggal" value="{{ $history->tanggal }}">
+            <input type="hidden" name="tempat" value="{{ $history->tempat }}">
+            <input type="hidden" name="materi" value="{{ $history->materi }}">
+            
+            <button type="submit" class="text-red-600 hover:text-red-800 font-medium text-sm transition-colors">
+                Hapus
+            </button>
+        </form>
+    </td>
+</tr>
+@empty
+<tr>
+    <td colspan="5" class="px-6 py-10 text-center text-gray-400">
+        Belum ada riwayat presensi tersimpan.
+    </td>
+</tr>
+@endforelse
+
+
+</tbody>
                 </div>
             </div>
         </section>

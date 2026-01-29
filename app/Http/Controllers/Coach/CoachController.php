@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Coach;
 
 use App\Http\Controllers\Controller;
 use App\Models\User; 
-use App\Models\Attendance; // Pastikan model ini sudah dibuat
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,21 +18,15 @@ class CoachController extends Controller
     {
         $user = Auth::user();
         
-        // 1. MENGAMBIL DATA ATLET
         $athletes = User::where('role', 'atlet')->get();
 
-        // 2. MENGAMBIL RIWAYAT PRESENSI
-        // Kita ambil data unik berdasarkan tanggal, tempat, dan materi 
-        // agar tidak muncul double jika satu sesi ada banyak atlet.
-        // Kita gunakan groupBy atau manual grouping untuk dashboard.
+        // Mengambil riwayat presensi yang dikelompokkan berdasarkan sesi
         $attendanceHistory = Attendance::where('coach_id', Auth::id())
             ->select('tanggal', 'tempat', 'materi', DB::raw('count(athlete_id) as athletes_count'))
             ->groupBy('tanggal', 'tempat', 'materi')
             ->orderBy('tanggal', 'desc')
-            ->limit(10) // Tampilkan 10 riwayat terakhir
             ->get();
 
-        // 3. DATA STATISTIK
         $stats = [
             'total_athletes' => $athletes->count(),
             'sessions_this_week' => Attendance::where('coach_id', Auth::id())
@@ -41,16 +35,14 @@ class CoachController extends Controller
                 ->count('tanggal'),
         ];
 
-        // Mengirimkan data ke view
         return view('coach.dashboard', compact('user', 'athletes', 'stats', 'attendanceHistory'));
     }
 
     /**
-     * Menyimpan data presensi yang dikirim dari form
+     * Menyimpan data presensi
      */
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'tanggal' => 'required|date',
             'tempat' => 'required|string',
@@ -58,7 +50,6 @@ class CoachController extends Controller
         ]);
 
         try {
-            // Gunakan Transaction untuk memastikan semua data tersimpan dengan benar
             DB::transaction(function () use ($request) {
                 foreach ($request->athletes as $athleteId) {
                     Attendance::create([
@@ -71,10 +62,29 @@ class CoachController extends Controller
                 }
             });
 
-            return redirect()->back()->with('success', 'Presensi berhasil disimpan untuk ' . count($request->athletes) . ' atlet.');
+            return redirect()->back()->with('success', 'Presensi berhasil disimpan.');
             
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menyimpan presensi: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menghapus satu sesi presensi
+     */
+    public function destroy(Request $request)
+    {
+        try {
+            // Kita hapus semua data atlet yang ada di sesi yang sama (tanggal, tempat, materi)
+            Attendance::where('coach_id', Auth::id())
+                ->where('tanggal', $request->tanggal)
+                ->where('tempat', $request->tempat)
+                ->where('materi', $request->materi)
+                ->delete();
+
+            return redirect()->back()->with('success', 'Data presensi berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 }

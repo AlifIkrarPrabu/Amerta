@@ -78,9 +78,6 @@ Route::middleware('auth')->group(function () {
         
         // Halaman utama dashboard
         Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
-        
-        // Route untuk menyimpan presensi (Ini yang tadi menyebabkan error)
-        // Pastikan name('presensi.store') sesuai dengan yang dipanggil di form action pada blade
         Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
-        
+        Route::delete('/coach/attendance/delete', [CoachController::class, 'destroy'])->name('coach.attendance.destroy');
     });
