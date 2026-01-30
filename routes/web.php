@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\Admin\AthleteController; 
+use App\Http\Controllers\Admin\AthleteController as AdminAthleteController; 
 use App\Http\Controllers\Admin\UserController; 
 use App\Http\Controllers\Coach\CoachController;
+use App\Http\Controllers\Athlete\AthleteController as UserAthleteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,11 +59,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     })->name('dashboard');
 
     // CRUD Atlet (Menggunakan format Resource)
-    Route::resource('athletes', AthleteController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
     
     // CRUD AKUN PENGGUNA (Sekarang mencakup index, store, edit (JSON), update, destroy)
-    // Route::resource('users', UserController::class) akan mencakup semua yang kita butuhkan.
     Route::resource('users', UserController::class); 
+
+    
 });
 
 
@@ -80,4 +82,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
         Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
         Route::delete('/coach/attendance/delete', [CoachController::class, 'destroy'])->name('coach.attendance.destroy');
-    });
+});
+// --- RUTE UNTUK ATHLETE ---
+    Route::prefix('athlete')->name('athlete.')->group(function () {
+        Route::get('/dashboard', [UserAthleteController::class, 'index'])->name('dashboard');
+});

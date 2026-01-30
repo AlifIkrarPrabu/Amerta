@@ -72,7 +72,7 @@ class LoginController extends Controller
 
         // Jika role adalah 'atlet', arahkan ke rute atlet (misalnya)
         if ($user->role === 'atlet') {
-             return view('atlet.dashboard', compact('user')); // Asumsi Anda punya view 'atlet.dashboard'
+             return redirect()->route('athlete.dashboard'); // Asumsi Anda punya view 'atlet.dashboard'
         }
 
         // Jika role tidak terdefinisi
