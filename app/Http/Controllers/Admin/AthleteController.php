@@ -64,4 +64,21 @@ class AthleteController extends Controller
 
         return redirect()->route('admin.athletes.index')->with('success', 'Akun Atlet berhasil dihapus.');
     }
+
+    /**
+     * Fitur Konfirmasi Pembayaran: Reset Kehadiran menjadi 0
+     */
+    public function resetAttendance($id)
+    {
+        try {
+            DB::transaction(function () use ($id) {
+                // Menghapus semua data di tabel attendances untuk atlet ini
+                Attendance::where('athlete_id', $id)->delete();
+            });
+
+            return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi. Presensi atlet telah direset ke 0.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal meriset data: ' . $e->getMessage());
+        }
+    }
 }
