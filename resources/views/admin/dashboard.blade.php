@@ -18,7 +18,9 @@
 <body class="flex min-h-screen">
 
     {{-- Sidebar --}}
-    <aside class="w-64 bg-teal-600 shadow-xl flex flex-col p-4 text-white">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 shadow-xl flex flex-col p-4 text-white 
+             transform -translate-x-full lg:translate-x-0 transition-transform duration-300 lg:static lg:flex lg:min-h-screen sidebar-mobile-transition">
+        
         <div class="text-2xl font-bold mb-8 text-center border-b pb-4 border-teal-500">
             D'Amerta Admin
         </div>
@@ -31,12 +33,12 @@
                 </li>
                 <li class="mb-2">
                     <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl hover:bg-teal-700 transition duration-150">
-                        <i class="fas fa-users mr-3"></i> Kelola Atlet
+                        <i class="fas fa-swimmer mr-3"></i> Kelola Atlet
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="#" class="flex items-center p-3 rounded-xl hover:bg-teal-700 transition duration-150 opacity-50 cursor-not-allowed">
-                        <i class="fas fa-chart-line mr-3"></i> Laporan (Soon)
+                    <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl hover:bg-teal-700 transition duration-150">
+                        <i class="fas fa-users-cog mr-3"></i> Kelola Akun
                     </a>
                 </li>
             </ul>
@@ -50,6 +52,8 @@
             </form>
         </div>
     </aside>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
     {{-- Main Content --}}
     <main class="flex-1 p-8">
