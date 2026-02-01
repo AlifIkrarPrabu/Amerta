@@ -10,17 +10,7 @@
 <body class="bg-gray-100 font-sans">
 
     <div class="min-h-screen flex">
-        <!-- Sidebar Placeholder (Opsional) -->
-        <div class="w-64 bg-indigo-900 text-white hidden md:block">
-            <div class="p-6 text-2xl font-bold border-b border-indigo-800">
-                FitCenter
-            </div>
-            <nav class="mt-6">
-                <a href="#" class="block py-3 px-6 bg-indigo-800 border-l-4 border-white">Dashboard</a>
-                <a href="#" class="block py-3 px-6 hover:bg-indigo-800 transition">Jadwal Latihan</a>
-                <a href="#" class="block py-3 px-6 hover:bg-indigo-800 transition">Profil</a>
-            </nav>
-        </div>
+        
 
         <!-- Main Content -->
         <div class="flex-1">

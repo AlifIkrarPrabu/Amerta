@@ -50,4 +50,8 @@ class User extends Authenticatable
             'birth_date' => 'date', // DITAMBAH: Agar birth_date otomatis diubah menjadi objek Carbon
         ];
     }
+
+    public function attendances() {
+    return $this->hasMany(Attendance::class, 'athlete_id');
+    }
 }

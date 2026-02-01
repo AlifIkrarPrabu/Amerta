@@ -60,6 +60,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // CRUD Atlet (Menggunakan format Resource)
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
+    Route::post('athletes/{id}/reset-attendance', [AdminAthleteController::class, 'resetAttendance'])->name('athletes.reset-attendance');
     
     // CRUD AKUN PENGGUNA (Sekarang mencakup index, store, edit (JSON), update, destroy)
     Route::resource('users', UserController::class); 
