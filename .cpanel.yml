@@ -1,0 +1,4 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/lantlqts/amerta/
+    - /bin/cp -R * $DEPLOYPATH
