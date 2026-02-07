@@ -65,11 +65,12 @@
                                     </select>
                                 </div>
 
-                                <!-- Materi -->
+                                <!-- Materi 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-600 mb-1">Materi Latihan (Opsional)</label>
                                     <textarea name="materi" rows="2" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2.5 border" placeholder="Contoh: Gaya Bebas"></textarea>
                                 </div>
+                                -->
 
                                 <!-- Evaluasi (TAMBAHAN BARU) -->
                                 <div>
