@@ -96,16 +96,13 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="text-lg font-bold text-gray-800">Riwayat Kehadiran Terakhir</h3>
-                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-indigo-600 bg-indigo-200 uppercase last:mr-0 mr-1">
-                            Bulan Ini
-                        </span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50 text-gray-600 text-sm">
                                 <tr>
                                     <th class="py-4 px-6 font-semibold">Tanggal</th>
-                                    <th class="py-4 px-6 font-semibold">Waktu</th>
+                                    <th class="py-4 px-6 font-semibold">Evaluasi</th>
                                     <th class="py-4 px-6 font-semibold">Kegiatan</th>
                                     <th class="py-4 px-6 font-semibold text-center">Status</th>
                                 </tr>
@@ -114,7 +111,16 @@
                                 @forelse($attendances as $attendance)
                                 <tr class="hover:bg-gray-50 transition">
                                     <td class="py-4 px-6">{{ \Carbon\Carbon::parse($attendance->tanggal)->format('d M Y') }}</td>
-                                    <td class="py-4 px-6">{{ $attendance->time ?? '--:--' }}</td>
+                                    <td class="py-4 px-6">
+                                        @if($attendance->evaluation)
+                                            <div class="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
+                                                <i class="fas fa-comment-dots text-yellow-600 mr-1"></i>
+                                                {{ $attendance->evaluation }}
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 italic text-xs">Tidak ada evaluasi</span>
+                                        @endif
+                                    </td>
                                     <td class="py-4 px-6">{{ $attendance->activity ?? 'Latihan Reguler' }}</td>
                                     <td class="py-4 px-6 text-center">
                                         <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Hadir</span>

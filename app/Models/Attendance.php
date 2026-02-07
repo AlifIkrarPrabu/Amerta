@@ -16,6 +16,7 @@ class Attendance extends Model
         'tanggal',
         'tempat',
         'materi',
+        'evaluation',
     ];
 
     // Relasi ke User (Pelatih)

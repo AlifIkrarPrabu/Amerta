@@ -22,8 +22,8 @@ class CoachController extends Controller
 
         // Mengambil riwayat presensi yang dikelompokkan berdasarkan sesi
         $attendanceHistory = Attendance::where('coach_id', Auth::id())
-            ->select('tanggal', 'tempat', 'materi', DB::raw('count(athlete_id) as athletes_count'))
-            ->groupBy('tanggal', 'tempat', 'materi')
+            ->select('tanggal', 'tempat', 'materi', 'evaluation', DB::raw('count(athlete_id) as athletes_count'))
+            ->groupBy('tanggal', 'tempat', 'materi', 'evaluation')
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -47,6 +47,7 @@ class CoachController extends Controller
             'tanggal' => 'required|date',
             'tempat' => 'required|string',
             'athletes' => 'required|array|min:1', 
+            'evaluation' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -58,6 +59,7 @@ class CoachController extends Controller
                         'tanggal' => $request->tanggal,
                         'tempat' => $request->tempat,
                         'materi' => $request->materi,
+                        'evaluation' => $request->evaluation,
                     ]);
                 }
             });
