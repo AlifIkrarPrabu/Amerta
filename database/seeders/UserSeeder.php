@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         // HANYA buat 1 Akun Admin Utama. 
         // Semua akun lain (Pelatih/Atlet) akan dibuat melalui UI Admin.
         User::create([
-            'name' => 'Admin Utama Damerta',
+            'name' => 'Owner Alif M.kom',
             'email' => 'admin@damerta.com', 
             // *** NOMOR HP INI ADALAH KREDENSIAL LOGIN ANDA ***
             'phone' => '081234567890', 

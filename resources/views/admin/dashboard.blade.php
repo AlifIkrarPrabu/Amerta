@@ -3,69 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - D'Amerta Swim</title>
+    <title>Dashboard Admin - D'Amerta Swim</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Icon Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f4f7f6;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen overflow-x-hidden">
+
+    {{-- Sidebar Overlay --}}
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
     {{-- Sidebar --}}
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 shadow-xl flex flex-col p-4 text-white 
-                transform -translate-x-full lg:translate-x-0 transition-transform duration-300 lg:static lg:flex lg:min-h-screen sidebar-mobile-transition">
-        
-        <div class="text-2xl font-bold mb-8 text-center border-b pb-4 border-teal-500">
-            D'Amerta Admin
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 shadow-xl flex flex-col p-4 text-white transform -translate-x-full lg:translate-x-0 sidebar-transition lg:static lg:flex lg:min-h-screen">
+        <div class="flex items-center justify-between mb-8 border-b pb-4 border-teal-500">
+            <div class="text-2xl font-bold text-center w-full">D'Amerta Admin</div>
+            {{-- Tombol Tutup Sidebar (Hanya Mobile) --}}
+            <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
+        
         <nav class="flex-grow">
             <ul>
                 <li class="mb-2">
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.dashboard') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150 font-semibold">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.dashboard') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-home mr-3"></i> Dashboard
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.athletes.*') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
+                    <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.athletes.*') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-swimmer mr-3"></i> Kelola Atlet
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.users.*') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
+                    <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.users.*') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-users-cog mr-3"></i> Kelola Akun
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="{{ route('admin.reports.coaches') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.reports.coaches') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
-                        <i class="fas fa-file-signature mr-3"></i> Reports Coach
+                    <a href="{{ route('admin.reports.coaches') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.reports.coaches') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
+                        <i class="fas fa-clipboard-list mr-3"></i> Reports Coach
                     </a>
                 </li>
             </ul>
         </nav>
-        <div class="mt-auto">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full flex items-center justify-center p-3 rounded-xl bg-red-600 hover:bg-red-700 transition duration-150 font-semibold shadow-lg">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </button>
-            </form>
-        </div>
+
+        <form action="{{ route('logout') }}" method="POST" class="mt-auto">
+            @csrf
+            <button type="submit" class="w-full flex items-center justify-center p-3 rounded-xl bg-red-600 hover:bg-red-700 font-semibold shadow-lg transition">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </form>
     </aside>
 
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
-
     {{-- Main Content --}}
-    <main class="flex-1 p-8">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Dashboard Utama</h1>
-            <div class="flex items-center space-x-4">
-                <span class="text-gray-600">Halo, {{ Auth::user()->name ?? 'Admin' }}!</span>
+    <main class="flex-1 p-4 md:p-8 w-full">
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                {{-- Tombol Hamburger (Hanya tampil di Mobile) --}}
+                <button onclick="toggleSidebar()" class="lg:hidden mr-4 text-teal-600 focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Dashboard Utama</h1>
+            </div>
+            <div class="hidden md:block text-right">
+                <p class="text-gray-500 text-sm">Halo, Admin!</p>
+                <p class="font-bold text-teal-600">{{ now()->translatedFormat('l, d F Y') }}</p>
             </div>
         </header>
 
@@ -133,6 +140,16 @@
         </section>
 
     </main>
-
+<script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            // Toggle class translate untuk geser sidebar
+            sidebar.classList.toggle('-translate-x-full');
+            // Toggle overlay hitam
+            overlay.classList.toggle('hidden');
+        }
+</script>
 </body>
 </html>
