@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\AthleteController as AdminAthleteController; 
 use App\Http\Controllers\Admin\UserController; 
+use App\Http\Controllers\Admin\CoachAttendanceController;
 use App\Http\Controllers\Coach\CoachController;
 use App\Http\Controllers\Athlete\AthleteController as UserAthleteController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', function () {
         return view('admin.dashboard'); 
     })->name('dashboard');
+
+    //Rute Reports Coach
+    Route::get('/reports/coaches', [CoachAttendanceController::class, 'index'])->name('reports.coaches');
 
     // CRUD Atlet (Menggunakan format Resource)
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
