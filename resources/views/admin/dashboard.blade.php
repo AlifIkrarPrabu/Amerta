@@ -19,7 +19,7 @@
 
     {{-- Sidebar --}}
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-teal-600 shadow-xl flex flex-col p-4 text-white 
-             transform -translate-x-full lg:translate-x-0 transition-transform duration-300 lg:static lg:flex lg:min-h-screen sidebar-mobile-transition">
+                transform -translate-x-full lg:translate-x-0 transition-transform duration-300 lg:static lg:flex lg:min-h-screen sidebar-mobile-transition">
         
         <div class="text-2xl font-bold mb-8 text-center border-b pb-4 border-teal-500">
             D'Amerta Admin
@@ -27,18 +27,23 @@
         <nav class="flex-grow">
             <ul>
                 <li class="mb-2">
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-xl bg-teal-700 hover:bg-teal-800 transition duration-150 font-semibold">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.dashboard') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150 font-semibold">
                         <i class="fas fa-home mr-3"></i> Dashboard
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl hover:bg-teal-700 transition duration-150">
+                    <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.athletes.*') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-swimmer mr-3"></i> Kelola Atlet
                     </a>
                 </li>
                 <li class="mb-2">
-                    <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl hover:bg-teal-700 transition duration-150">
+                    <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.users.*') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-users-cog mr-3"></i> Kelola Akun
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="{{ route('admin.reports.coaches') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.reports.coaches') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
+                        <i class="fas fa-file-signature mr-3"></i> Reports Coach
                     </a>
                 </li>
             </ul>

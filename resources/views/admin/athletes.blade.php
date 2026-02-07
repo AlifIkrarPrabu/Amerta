@@ -46,6 +46,11 @@
                         <i class="fas fa-users-cog mr-3"></i> Kelola Akun
                     </a>
                 </li>
+                <li class="mb-2">
+                    <a href="{{ route('admin.reports.coaches') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.reports.coaches') ? 'bg-teal-700' : 'hover:bg-teal-700' }} transition duration-150">
+                        <i class="fas fa-file-signature mr-3"></i> Reports Coach
+                    </a>
+                </li>
             </ul>
         </nav>
         <div class="mt-auto">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D'Amerta Swim - Professional Diving Trainings</title>
+    <title>D'Amerta Swim - Les Renang Cikampek</title>
     {{-- Menggunakan Vite untuk mengkompilasi CSS dan JS Anda --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- Menambahkan Google Fonts 'Poppins' --}}
@@ -56,7 +56,7 @@
                     Professional <br> Swimming Club
                 </h1>
                 <p class="text-xl md:text-2xl mb-8">
-                    Where Champions Begin
+                    Where Champions Begin!
                 </p>
                 <a href="{{ route('login') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full text-lg shadow-lg transition duration-300">
     LOGIN &rarr;
