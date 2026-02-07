@@ -16,7 +16,7 @@
                 <i class="fas fa-user-clock"></i> Presensi Latihan
             </h1>
             <div class="flex items-center gap-4">
-                <span class="text-sm hidden md:inline">Halo, Coach {{ Auth::user()->name ?? 'Pelatih' }}</span>
+                
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition">
@@ -33,7 +33,9 @@
                 {{ session('success') }}
             </div>
         @endif
-
+        <span class="text-xs md:text-sm font-bold border-r border-blue-400 pr-3 mr-1">
+                    Halo, Coach {{ Auth::user()->name ?? 'Pelatih' }}
+        </span>
         <!-- FORM INPUT PRESENSI -->
         <section>
             <form action="{{ route('presensi.store') }}" method="POST" id="presensiForm">
