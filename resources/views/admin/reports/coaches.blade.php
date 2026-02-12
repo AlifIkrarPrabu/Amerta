@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,8 @@
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .month-content { display: none; }
+        .month-content.active { display: block; }
     </style>
 </head>
 <body class="flex min-h-screen overflow-x-hidden">
@@ -57,59 +59,94 @@
 
     {{-- Main Content --}}
     <main class="flex-1 p-4 md:p-8 w-full">
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
             <div class="flex items-center">
                 <button onclick="toggleSidebar()" class="lg:hidden mr-4 text-teal-600 focus:outline-none">
                     <i class="fas fa-bars text-2xl"></i>
                 </button>
                 <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Laporan Aktivitas Pelatih</h1>
             </div>
+
+            {{-- Filter Bulan --}}
+            <div class="relative min-w-[200px]">
+                <label for="monthFilter" class="block text-xs font-semibold text-gray-500 uppercase mb-1 ml-1">Pilih Periode Laporan:</label>
+                <div class="flex items-center bg-white border border-teal-200 rounded-xl px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-teal-500 transition">
+                    <i class="fas fa-filter text-teal-500 mr-2"></i>
+                    <select id="monthFilter" onchange="filterMonth(this.value)" class="w-full bg-transparent border-none focus:ring-0 text-gray-700 font-medium cursor-pointer appearance-none">
+                        <option value="all">Semua Bulan</option>
+                        @php
+                            $groupedReports = $reports->groupBy(function($item) {
+                                return \Carbon\Carbon::parse($item->tanggal)->translatedFormat('F Y');
+                            });
+                        @endphp
+                        @foreach($groupedReports as $monthYear => $items)
+                            <option value="{{ Str::slug($monthYear) }}">{{ $monthYear }}</option>
+                        @endforeach
+                    </select>
+                    <i class="fas fa-chevron-down text-gray-400 ml-2 pointer-events-none"></i>
+                </div>
+            </div>
         </header>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-teal-50">
-                <h3 class="font-bold text-teal-800">Riwayat Sesi Latihan</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 text-gray-600 text-sm uppercase">
-                            <th class="p-4 border-b">Tanggal</th>
-                            <th class="p-4 border-b">Pelatih</th>
-                            <th class="p-4 border-b">Materi / Tempat</th>
-                            <th class="p-4 border-b text-center">Jumlah Atlet</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-700">
-                        @forelse($reports as $report)
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="p-4 border-b">
-                                <span class="font-semibold">{{ \Carbon\Carbon::parse($report->tanggal)->translatedFormat('d M Y') }}</span>
-                            </td>
-                            <td class="p-4 border-b">
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-teal-700">{{ $report->coach->name }}</span>
-                                    <span class="text-xs text-gray-500">{{ $report->coach->phone_number }}</span>
-                                </div>
-                            </td>
-                            <td class="p-4 border-b">
-                                <p class="font-medium text-gray-800">{{ $report->materi ?? 'Tanpa Materi' }}</p>
-                                <p class="text-xs text-gray-400"><i class="fas fa-map-marker-alt mr-1"></i> {{ $report->tempat }}</p>
-                            </td>
-                            <td class="p-4 border-b text-center">
-                                <span class="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-bold">
-                                    {{ $report->total_atlet }} Atlet
-                                </span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="p-10 text-center text-gray-400">Belum ada data latihan yang diinput.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div id="reportsContainer" class="space-y-10">
+            @forelse($groupedReports as $monthYear => $items)
+                <div id="content-{{ Str::slug($monthYear) }}" class="month-content active bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-300">
+                    {{-- Header Bulan --}}
+                    <div class="p-4 border-b border-teal-100 flex justify-between items-center bg-teal-600 text-white">
+                        <h3 class="font-bold flex items-center gap-2 text-lg">
+                            <i class="fas fa-calendar-alt"></i> {{ $monthYear }}
+                        </h3>
+                        <span class="bg-teal-800 text-xs px-3 py-1 rounded-full">{{ $items->count() }} Sesi</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-bold tracking-wider">
+                                    <th class="p-4 border-b">Tanggal</th>
+                                    <th class="p-4 border-b">Pelatih</th>
+                                    <th class="p-4 border-b">Materi / Tempat</th>
+                                    <th class="p-4 border-b text-center">Jumlah Atlet</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700 divide-y divide-gray-100">
+                                @foreach($items as $report)
+                                <tr class="hover:bg-teal-50/50 transition">
+                                    <td class="p-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-gray-800">{{ \Carbon\Carbon::parse($report->tanggal)->translatedFormat('d') }}</span>
+                                            <span class="text-xs text-gray-400 uppercase">{{ \Carbon\Carbon::parse($report->tanggal)->translatedFormat('D') }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-teal-700">{{ $report->coach->name ?? 'Pelatih' }}</span>
+                                            <span class="text-xs text-gray-400">{{ $report->coach->phone_number ?? '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <p class="font-medium text-gray-800">{{ $report->materi ?? 'Tanpa Materi' }}</p>
+                                        <p class="text-[10px] text-gray-400 flex items-center gap-1 mt-1 uppercase">
+                                            <i class="fas fa-map-marker-alt text-red-400"></i> {{ $report->tempat }}
+                                        </p>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg font-bold text-sm">
+                                            {{ $report->total_atlet }} <span class="hidden md:inline">Atlet</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white p-20 rounded-2xl shadow text-center border-2 border-dashed border-gray-200">
+                    <i class="fas fa-folder-open text-5xl text-gray-200 mb-4"></i>
+                    <p class="text-gray-400">Belum ada data laporan aktivitas pelatih.</p>
+                </div>
+            @endforelse
         </div>
     </main>
 
@@ -119,6 +156,24 @@
             const overlay = document.getElementById('sidebar-overlay');
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
+        }
+
+        function filterMonth(value) {
+            const contents = document.querySelectorAll('.month-content');
+            
+            if (value === 'all') {
+                contents.forEach(content => {
+                    content.classList.add('active');
+                });
+            } else {
+                contents.forEach(content => {
+                    if (content.id === 'content-' + value) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            }
         }
     </script>
 </body>
