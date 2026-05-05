@@ -39,7 +39,7 @@
 
         <div class="flex items-center gap-2">
             <span class="text-xs md:text-sm font-bold border-r border-blue-400 pr-3 mr-1 text-gray-600 uppercase tracking-wider">
-                Halo, Coach {{ Auth::user()->name ?? 'Pelatih' }}
+                Halooo, Coach {{ Auth::user()->name ?? 'Pelatih' }}
             </span>
         </div>
 
