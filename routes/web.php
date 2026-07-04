@@ -14,11 +14,6 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
 // --- Rute Halaman Publik ---
@@ -34,7 +29,6 @@ Route::get('/trainings', function () {
     return view('trainings');
 })->name('trainings');
 
-
 // --- Rute Otentikasi Kustom (Login/Logout) ---
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
@@ -44,34 +38,22 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/forgot-password', [LoginController::class, 'showForgotPasswordForm'])->name('password.request');
 Route::post('/forgot-password', [LoginController::class, 'resetPassword'])->name('password.reset.post');
 
-// Rute Dashboard Utama (tergantung role, akan diarahkan di LoginController)
+// Rute Dashboard Utama (Grup Auth umum)
 Route::get('/dashboard', [LoginController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-
 // --- Rute Khusus Admin ---
-// Menggabungkan semua rute admin ke dalam satu group middleware 'role:admin'
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    
-    // Rute untuk Dashboard Admin
     Route::get('/dashboard', function () {
         return view('admin.dashboard'); 
     })->name('dashboard');
 
-    //Rute Reports Coach
     Route::get('/reports/coaches', [CoachAttendanceController::class, 'index'])->name('reports.coaches');
-
-    // CRUD Atlet (Menggunakan format Resource)
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
     Route::post('athletes/{id}/reset-attendance', [AdminAthleteController::class, 'resetAttendance'])->name('athletes.reset-attendance');
-    
-    // CRUD AKUN PENGGUNA (Sekarang mencakup index, store, edit (JSON), update, destroy)
     Route::resource('users', UserController::class); 
-
-    
 });
-
 
 // --- Rute Profil Pengguna (Umum) ---
 Route::middleware('auth')->group(function () {
@@ -80,15 +62,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Prefix 'coach' berarti URL akan menjadi /coach/dashboard dan /coach/presensi
-    Route::prefix('coach')->group(function () {
-        
-        // Halaman utama dashboard
-        Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
-        Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
-        Route::delete('/coach/attendance/delete', [CoachController::class, 'destroy'])->name('coach.attendance.destroy');
+// --- RUTE UNTUK COACH ---
+Route::middleware(['auth'])->prefix('coach')->group(function () {
+    Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
+    Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
+    Route::delete('/coach/attendance/delete', [CoachController::class, 'destroy'])->name('coach.attendance.destroy');
 });
-// --- RUTE UNTUK ATHLETE ---
-    Route::prefix('athlete')->name('athlete.')->group(function () {
-        Route::get('/dashboard', [UserAthleteController::class, 'index'])->name('dashboard');
+
+// --- RUTE UNTUK ATHLETE (Sudah Ditambahkan Rute Navigasi Baru) ---
+Route::middleware(['auth'])->prefix('athlete')->name('athlete.')->group(function () {
+    Route::get('/dashboard', [UserAthleteController::class, 'index'])->name('dashboard');
+    Route::get('/attendance-history', [UserAthleteController::class, 'attendanceHistory'])->name('attendance-history');
+    Route::get('/report-detail', [UserAthleteController::class, 'reportDetail'])->name('report_detail');
 });
