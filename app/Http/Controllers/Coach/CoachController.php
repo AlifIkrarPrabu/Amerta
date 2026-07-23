@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Coach;
 use App\Http\Controllers\Controller;
 use App\Models\User; 
 use App\Models\Attendance;
+use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +59,7 @@ class CoachController extends Controller
                         'athlete_id' => $athleteId,
                         'tanggal' => $request->tanggal,
                         'tempat' => $request->tempat,
-                        'materi' => $request->materi,
+                        'materi' => $request->materi ?? '-',
                         'evaluation' => $request->evaluation,
                     ]);
                 }
@@ -72,21 +73,66 @@ class CoachController extends Controller
     }
 
     /**
-     * Menghapus satu sesi presensi
+     * Menhapus satu sesi presensi
      */
     public function destroy(Request $request)
     {
         try {
-            // Kita hapus semua data atlet yang ada di sesi yang sama (tanggal, tempat, materi)
             Attendance::where('coach_id', Auth::id())
                 ->where('tanggal', $request->tanggal)
                 ->where('tempat', $request->tempat)
-                ->where('materi', $request->materi)
                 ->delete();
 
             return redirect()->back()->with('success', 'Data presensi berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menampilkan Halaman Raport Bulanan Atlet
+     */
+    public function reportIndex(Request $request)
+    {
+        $user = Auth::user();
+        $selectedMonth = $request->get('bulan', date('Y-m')); // Default bulan ini
+
+        $athletes = User::where('role', 'atlet')->get();
+
+        // Ambil raport yang sudah diisi pada bulan tersebut
+        $reports = Report::where('bulan_tahun', $selectedMonth)
+            ->get()
+            ->keyBy('athlete_id');
+
+        return view('coach.reports', compact('user', 'athletes', 'reports', 'selectedMonth'));
+    }
+
+    /**
+     * Menyimpan atau memperbarui Raport Bulanan Atlet
+     */
+    public function reportStore(Request $request)
+    {
+        $request->validate([
+            'athlete_id' => 'required|exists:users,id',
+            'bulan_tahun' => 'required|string',
+            'catatan_evaluasi' => 'required|string',
+        ]);
+
+        try {
+            Report::updateOrCreate(
+                [
+                    'athlete_id' => $request->athlete_id,
+                    'bulan_tahun' => $request->bulan_tahun,
+                ],
+                [
+                    'coach_id' => Auth::id(),
+                    'catatan_evaluasi' => $request->catatan_evaluasi,
+                ]
+            );
+
+            return redirect()->back()->with('success', 'Raport bulanan berhasil disimpan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menyimpan raport: ' . $e->getMessage());
         }
     }
 }

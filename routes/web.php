@@ -8,7 +8,6 @@ use App\Http\Controllers\Admin\CoachAttendanceController;
 use App\Http\Controllers\Coach\CoachController;
 use App\Http\Controllers\Athlete\AthleteController as UserAthleteController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +28,7 @@ Route::get('/trainings', function () {
     return view('trainings');
 })->name('trainings');
 
-// --- Rute Otentikasi Kustom (Login/Logout) ---
+// --- Rute Otentikasi Kustom ---
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -38,7 +37,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/forgot-password', [LoginController::class, 'showForgotPasswordForm'])->name('password.request');
 Route::post('/forgot-password', [LoginController::class, 'resetPassword'])->name('password.reset.post');
 
-// Rute Dashboard Utama (Grup Auth umum)
+// Rute Dashboard Utama
 Route::get('/dashboard', [LoginController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -55,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', UserController::class); 
 });
 
-// --- Rute Profil Pengguna (Umum) ---
+// --- Rute Profil Pengguna ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -63,13 +62,17 @@ Route::middleware('auth')->group(function () {
 });
 
 // --- RUTE UNTUK COACH ---
-Route::middleware(['auth'])->prefix('coach')->group(function () {
-    Route::get('/dashboard', [CoachController::class, 'index'])->name('coach.dashboard');
+Route::middleware(['auth'])->prefix('coach')->name('coach.')->group(function () {
+    Route::get('/dashboard', [CoachController::class, 'index'])->name('dashboard');
     Route::post('/presensi', [CoachController::class, 'store'])->name('presensi.store');
-    Route::delete('/coach/attendance/delete', [CoachController::class, 'destroy'])->name('coach.attendance.destroy');
+    Route::delete('/attendance/delete', [CoachController::class, 'destroy'])->name('attendance.destroy');
+
+    // Rute Baru untuk Raport Bulanan
+    Route::get('/reports', [CoachController::class, 'reportIndex'])->name('reports.index');
+    Route::post('/reports', [CoachController::class, 'reportStore'])->name('reports.store');
 });
 
-// --- RUTE UNTUK ATHLETE (Sudah Ditambahkan Rute Navigasi Baru) ---
+// --- RUTE UNTUK ATHLETE ---
 Route::middleware(['auth'])->prefix('athlete')->name('athlete.')->group(function () {
     Route::get('/dashboard', [UserAthleteController::class, 'index'])->name('dashboard');
     Route::get('/attendance-history', [UserAthleteController::class, 'attendanceHistory'])->name('attendance-history');

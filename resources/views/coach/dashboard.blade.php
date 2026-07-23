@@ -19,10 +19,14 @@
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i class="fas fa-user-clock"></i> Presensi Latihan
             </h1>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+                <!-- Navigation Button to Raport -->
+                <a href="{{ route('coach.reports.index') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fas fa-file-invoice"></i> Raport Bulanan
+                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm transition">
                         Keluar
                     </button>
                 </form>
@@ -45,7 +49,7 @@
 
         <!-- FORM INPUT PRESENSI -->
         <section>
-            <form action="{{ route('presensi.store') }}" method="POST" id="presensiForm">
+            <form action="{{ route('coach.presensi.store') }}" method="POST" id="presensiForm">
                 @csrf
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Kolom Kiri: Detail Sesi -->
@@ -70,7 +74,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-600 mb-1 font-bold">Evaluasi / Catatan Pelatih</label>
                                     <textarea name="evaluation" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 p-2.5 border bg-green-50/30" placeholder="Berikan evaluasi hasil latihan hari ini..."></textarea>
-                                    <p class="text-[10px] text-gray-400 mt-1">*Catatan ini akan muncul di dashboard orang tua/atlet.</p>
+                                    <p class="text-[10px] text-gray-400 mt-1">*Catatan harian ini akan muncul di dashboard atlet/orang tua.</p>
                                 </div>
                             </div>
                         </div>
@@ -144,7 +148,6 @@
                     <i class="fas fa-history text-blue-500"></i> Riwayat Presensi
                 </h2>
                 
-                {{-- Dropdown Filter Bulan --}}
                 <div class="flex items-center bg-white border border-blue-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 min-w-[220px]">
                     <i class="fas fa-calendar-check text-blue-500 mr-2"></i>
                     <select id="historyMonthFilter" onchange="filterHistoryMonth(this.value)" class="w-full bg-transparent border-none focus:ring-0 text-gray-700 font-medium cursor-pointer">
@@ -174,8 +177,8 @@
                                     <tr>
                                         <th class="px-6 py-3 border-b">Tanggal</th>
                                         <th class="px-6 py-3 border-b">Lokasi</th>
-                                        <th class="px-6 py-3 border-b">Evaluasi</th>
-                                        <th class="px-6 py-3 border-b">Atlet</th>
+                                        <th class="px-6 py-3 border-b">Evaluasi Sesi</th>
+                                        <th class="px-6 py-3 border-b">Jumlah Atlet</th>
                                         <th class="px-6 py-3 border-b text-right">Aksi</th>
                                     </tr>
                                 </thead>
@@ -202,7 +205,7 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="bg-blue-100 text-blue-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                                                {{ $history->athletes_count ?? 0 }}
+                                                {{ $history->athletes_count ?? 0 }} Atlet
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 text-right">
@@ -232,7 +235,6 @@
     </main>
 
     <script>
-        // Filter History by Month
         function filterHistoryMonth(value) {
             const sections = document.querySelectorAll('.month-section');
             if (value === 'all') {
@@ -248,7 +250,6 @@
             }
         }
 
-        // Fungsi Table Selection
         function toggleRow(row) {
             const checkbox = row.querySelector('.athlete-checkbox');
             checkbox.checked = !checkbox.checked;
@@ -269,7 +270,6 @@
             document.getElementById('selectedCount').innerText = count;
         }
 
-        // Search Atlet
         document.getElementById('searchAthlete').addEventListener('keyup', function() {
             let filter = this.value.toUpperCase();
             let rows = document.querySelectorAll("#athleteTable tr");
@@ -282,7 +282,6 @@
             });
         });
 
-        // Event listener checkbox (mencegah bubbling dari click row)
         document.querySelectorAll('.athlete-checkbox').forEach(cb => {
             cb.addEventListener('change', function() {
                 updateRowStyle(this.closest('tr'), this.checked);
