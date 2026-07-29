@@ -43,34 +43,48 @@
             </div>
         @endif
 
-        <!-- Filter Bulan -->
+        <!-- Filter Bulan & Input Pencarian -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
                 <h2 class="text-lg font-bold text-gray-800">Evaluasi Bulanan Atlet</h2>
-                <p class="text-xs text-gray-500">Pilih periode bulan untuk memasukkan atau melihat evaluasi atlet.</p>
+                <p class="text-xs text-gray-500">Pilih periode bulan dan cari atlet untuk memasukkan atau melihat evaluasi.</p>
             </div>
-            <form method="GET" action="{{ route('coach.reports.index') }}" class="flex items-center gap-3">
-                <input type="month" name="bulan" value="{{ $selectedMonth }}" class="border border-gray-300 rounded-lg p-2.5 text-sm font-semibold text-gray-700 focus:ring-blue-500 focus:border-blue-500">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition">
-                    Pilih Bulan
-                </button>
-            </form>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <!-- Input Fitur Pencarian Nama Atlet -->
+                <div class="relative w-full sm:w-64">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-search text-sm"></i>
+                    </span>
+                    <input type="text" id="searchAthleteReport" placeholder="Cari nama atlet..." 
+                        class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full shadow-sm">
+                </div>
+
+                <!-- Form Filter Bulan -->
+                <form method="GET" action="{{ route('coach.reports.index') }}" class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="month" name="bulan" value="{{ $selectedMonth }}" class="border border-gray-300 rounded-lg p-2 text-sm font-semibold text-gray-700 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shrink-0">
+                        Pilih Bulan
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Daftar Atlet & Form Input Raport -->
-        <div class="grid grid-cols-1 gap-6">
+        <div class="grid grid-cols-1 gap-6" id="athleteListContainer">
             @forelse($athletes as $athlete)
                 @php
                     $existingReport = $reports->get($athlete->id);
                 @endphp
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="athlete-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" 
+                     data-athlete-name="{{ strtolower($athlete->name) }}">
                     <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-sm uppercase">
                                 {{ substr($athlete->name, 0, 2) }}
                             </div>
                             <div>
-                                <h3 class="font-bold text-gray-800 text-base">{{ $athlete->name }}</h3>
+                                <h3 class="font-bold text-gray-800 text-base athlete-name-display">{{ $athlete->name }}</h3>
                                 <p class="text-xs text-gray-500">Atlet Active</p>
                             </div>
                         </div>
@@ -105,9 +119,42 @@
                     Tidak ada data atlet.
                 </div>
             @endforelse
+
+            <!-- Pesan jika hasil pencarian nama atlet tidak ditemukan -->
+            <div id="noSearchMatch" class="hidden bg-white p-12 text-center text-gray-400 rounded-xl border">
+                <i class="fas fa-search text-3xl mb-3 text-gray-300 block"></i>
+                Tidak ditemukan atlet dengan nama tersebut.
+            </div>
         </div>
 
     </main>
+
+    <!-- Script Live Search -->
+    <script>
+        document.getElementById('searchAthleteReport').addEventListener('keyup', function () {
+            let filterValue = this.value.toLowerCase().trim();
+            let athleteCards = document.querySelectorAll('.athlete-card');
+            let visibleCount = 0;
+
+            athleteCards.forEach(function (card) {
+                let athleteName = card.getAttribute('data-athlete-name');
+                if (athleteName.includes(filterValue)) {
+                    card.style.display = "";
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Tampilkan pesan "tidak ditemukan" jika tidak ada nama yang cocok
+            let noMatchDiv = document.getElementById('noSearchMatch');
+            if (visibleCount === 0 && athleteCards.length > 0) {
+                noMatchDiv.classList.remove('hidden');
+            } else {
+                noMatchDiv.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
