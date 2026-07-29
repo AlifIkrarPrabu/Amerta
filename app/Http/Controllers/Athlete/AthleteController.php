@@ -74,4 +74,14 @@ class AthleteController extends Controller
 
         return view('athlete.report_detail', compact('user', 'report', 'selectedMonth', 'availableMonths'));
     }
+
+    /**
+     * Menampilkan Halaman Informasi Pembayaran
+     */
+    public function payment()
+    {
+        $user = Auth::user();
+
+        return view('athlete.payment', compact('user'));
+    }
 }

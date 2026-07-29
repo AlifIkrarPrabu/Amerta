@@ -77,4 +77,5 @@ Route::middleware(['auth'])->prefix('athlete')->name('athlete.')->group(function
     Route::get('/dashboard', [UserAthleteController::class, 'index'])->name('dashboard');
     Route::get('/attendance-history', [UserAthleteController::class, 'attendanceHistory'])->name('attendance-history');
     Route::get('/report-detail', [UserAthleteController::class, 'reportDetail'])->name('report_detail');
+    Route::get('/payment', [UserAthleteController::class, 'payment'])->name('payment');
 });

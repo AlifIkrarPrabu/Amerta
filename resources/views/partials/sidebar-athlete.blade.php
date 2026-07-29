@@ -35,6 +35,12 @@
             <i class="fas fa-file-invoice w-5 text-center {{ Route::is('athlete.report_detail') ? '' : 'text-slate-500 group-hover:text-indigo-400' }}"></i>
             <span>Raport Bulanan</span>
         </a>
+
+        <a href="{{ route('athlete.payment') }}" 
+           class="flex items-center space-x-3 px-4 py-3 rounded-xl transition font-medium text-sm {{ Route::is('athlete.payment') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 group' }}">
+            <i class="fas fa-wallet w-5 text-center {{ Route::is('athlete.payment') ? '' : 'text-slate-500 group-hover:text-indigo-400' }}"></i>
+            <span>Pembayaran</span>
+        </a>
     </nav>
 
     <div class="p-4 border-t border-slate-800 bg-slate-950/20">
