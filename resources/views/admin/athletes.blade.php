@@ -83,6 +83,12 @@
                 <span class="block sm:inline">{{ session('success') }}</span>
             </div>
         @endif
+
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+        @endif
         
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -112,8 +118,8 @@
                     @forelse ($athletes as $index => $athlete)
                         @php
                             $totalCount = $athlete->attendances_count ?? 0;
-                            // Menghitung siklus presensi (1 - 4). Jika total 0, maka siklus 0.
-                            $cycleSession = ($totalCount > 0) ? (($totalCount % 4 == 0) ? 4 : ($totalCount % 4)) : 0;
+                            // Menghitung siklus presensi (1 - 4). Jika total 0 atau kelipatan 4, maka siklus bernilai 4
+                            $cycleSession = ($totalCount > 0) ? (($totalCount % 4 == 0) ? 4 : ($totalCount % 4)) : 1;
                         @endphp
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
@@ -124,9 +130,10 @@
                             
                             {{-- KOLOM TOTAL PRESENSI --}}
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $cycleSession == 4 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $cycleSession }} / 4 Sesi
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ ($totalCount > 0 && $totalCount % 4 == 0) ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
+                                    Sesi {{ $cycleSession }} / 4
                                 </span>
+                                <div class="text-xs text-gray-400 mt-1">Total: {{ $totalCount }} kali</div>
                             </td>
                             
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -136,6 +143,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ Str::limit($athlete->address ?? '-', 20) }}</td>
                             
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                {{-- Tombol Tambah Sesi/Presensi Manual --}}
+                                <button type="button" 
+                                    onclick="openAttendanceModal({{ $athlete->id }}, '{{ addslashes($athlete->name) }}')"
+                                    class="text-indigo-600 hover:text-indigo-900 mx-1 p-2 rounded-full hover:bg-indigo-50 transition duration-150" 
+                                    title="Tambah Sesi Latihan Manual">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+
                                 {{-- Tombol Hapus --}}
                                 <form action="{{ route('admin.athletes.destroy', $athlete->id) }}" method="POST" class="inline-block" onsubmit="return showConfirmDelete(event);">
                                     @csrf
@@ -198,6 +213,50 @@
         </div>
     </div>
 
+    {{-- Modal Tambah Sesi Latihan / Presensi Manual --}}
+    <div id="attendanceModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center opacity-0 pointer-events-none p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 transform transition-transform duration-300 scale-95">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Tambah Sesi Latihan Manual</h3>
+                <button id="closeAttendanceModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            
+            <form id="attendanceForm" method="POST">
+                @csrf
+                <p class="text-sm text-gray-600 mb-4">Menambahkan sesi presensi untuk atlet: <strong id="athleteNameTarget" class="text-indigo-600"></strong></p>
+
+                <div class="mb-4">
+                    <label for="tanggal" class="block text-gray-700 font-semibold mb-2">Tanggal Latihan</label>
+                    <input type="date" id="tanggal" name="tanggal" required value="{{ date('Y-m-d') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="coach_id" class="block text-gray-700 font-semibold mb-2">Pelatih</label>
+                    <select id="coach_id" name="coach_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Pilih Pelatih --</option>
+                        @foreach($coaches as $coach)
+                            <option value="{{ $coach->id }}">{{ $coach->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="tempat" class="block text-gray-700 font-semibold mb-2">Kolam / Tempat Latihan</label>
+                    <input type="text" id="tempat" name="tempat" placeholder="Contoh: Kolam Renang Tirta" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="materi" class="block text-gray-700 font-semibold mb-2">Materi / Catatan (Opsional)</label>
+                    <textarea id="materi" name="materi" rows="2" placeholder="Contoh: Penyesuaian sesi latihan terdahulu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition duration-200 shadow-lg">
+                    Tambah Sesi Presensi
+                </button>
+            </form>
+        </div>
+    </div>
+
     {{-- Modal Konfirmasi Hapus --}}
     <div id="confirmModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center opacity-0 pointer-events-none p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 transform transition-transform duration-300 scale-95">
@@ -235,7 +294,7 @@
             }
         });
 
-        // --- Modal Tambah Logic ---
+        // --- Modal Tambah Atlet Logic ---
         const modal = document.getElementById('athleteModal');
         const openModalBtn = document.getElementById('openModalBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
@@ -248,6 +307,24 @@
         closeModalBtn.addEventListener('click', () => {
             modal.querySelector('div').classList.remove('scale-100');
             setTimeout(() => { modal.classList.add('opacity-0', 'pointer-events-none'); }, 300);
+        });
+
+        // --- Modal Presensi Manual Logic ---
+        const attendanceModal = document.getElementById('attendanceModal');
+        const closeAttendanceModalBtn = document.getElementById('closeAttendanceModalBtn');
+        const attendanceForm = document.getElementById('attendanceForm');
+        const athleteNameTarget = document.getElementById('athleteNameTarget');
+
+        function openAttendanceModal(athleteId, athleteName) {
+            athleteNameTarget.innerText = athleteName;
+            attendanceForm.action = `{{ url('/admin/athletes') }}/${athleteId}/add-attendance`;
+            attendanceModal.classList.remove('opacity-0', 'pointer-events-none');
+            attendanceModal.querySelector('div').classList.add('scale-100');
+        }
+
+        closeAttendanceModalBtn.addEventListener('click', () => {
+            attendanceModal.querySelector('div').classList.remove('scale-100');
+            setTimeout(() => { attendanceModal.classList.add('opacity-0', 'pointer-events-none'); }, 300);
         });
 
         if (@json($errors->any())) {

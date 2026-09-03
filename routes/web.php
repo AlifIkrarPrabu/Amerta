@@ -44,13 +44,14 @@ Route::get('/dashboard', [LoginController::class, 'dashboard'])
 
 // --- Rute Khusus Admin ---
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard'); 
-    })->name('dashboard');
-
+    Route::get('/dashboard', function () { return view('admin.dashboard'); })->name('dashboard');
     Route::get('/reports/coaches', [CoachAttendanceController::class, 'index'])->name('reports.coaches');
+    
+    // Rute Tambah Presensi Manual (Satu paket dengan kelola atlet)
+    Route::post('/athletes/{athlete}/add-attendance', [AdminAthleteController::class, 'addAttendance'])->name('athletes.addAttendance');
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
-    Route::resource('users', UserController::class); 
+    
+    Route::resource('users', UserController::class);
 });
 
 // --- Rute Profil Pengguna ---

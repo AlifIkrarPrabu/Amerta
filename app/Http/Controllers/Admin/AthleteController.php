@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\User; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,7 +21,10 @@ class AthleteController extends Controller
             ->withCount('attendances') 
             ->get();
 
-        return view('admin.athletes', compact('athletes')); 
+        // Mengambil daftar pelatih untuk dropdown di modal penyesuaian presensi
+        $coaches = User::where('role', 'pelatih')->get();
+
+        return view('admin.athletes', compact('athletes', 'coaches')); 
     }
 
     /**
@@ -46,6 +50,33 @@ class AthleteController extends Controller
         ]);
 
         return redirect()->route('admin.athletes.index')->with('success', 'Akun Atlet berhasil dibuat.');
+    }
+
+    /**
+     * Menambahkan presensi manual oleh Admin untuk penyesuaian sesi latihan atlet.
+     */
+    public function addAttendance(Request $request, User $athlete)
+    {
+        if ($athlete->role !== 'atlet') {
+            return redirect()->route('admin.athletes.index')->with('error', 'Gagal menambahkan presensi. Pengguna bukan atlet.');
+        }
+
+        $validatedData = $request->validate([
+            'coach_id' => ['required', 'exists:users,id'],
+            'tanggal'  => ['required', 'date'],
+            'tempat'   => ['required', 'string', 'max:255'],
+            'materi'   => ['nullable', 'string'],
+        ]);
+
+        Attendance::create([
+            'athlete_id' => $athlete->id,
+            'coach_id'   => $validatedData['coach_id'],
+            'tanggal'    => $validatedData['tanggal'],
+            'tempat'     => $validatedData['tempat'],
+            'materi'     => $validatedData['materi'] ?? 'Penyesuaian Sesi Manual oleh Admin',
+        ]);
+
+        return redirect()->route('admin.athletes.index')->with('success', 'Sesi latihan atlet ' . $athlete->name . ' berhasil ditambahkan.');
     }
 
     /**
