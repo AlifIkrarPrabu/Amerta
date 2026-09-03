@@ -17,6 +17,9 @@ class AthleteController extends Controller
     {
         $user = Auth::user();
 
+        // Total seluruh presensi untuk menentukan posisi dalam siklus 4 latihan
+        $totalKehadiran = Attendance::where('athlete_id', $user->id)->count();
+
         // Mengambil riwayat kehadiran khusus atlet ini (Dibatasi 3 teratas untuk ringkasan dashboard)
         $attendances = Attendance::where('athlete_id', $user->id)
             ->with('coach')
@@ -26,12 +29,12 @@ class AthleteController extends Controller
 
         // Perhitungan Statistik
         $stats = [
-            'total_hadir' => Attendance::where('athlete_id', $user->id)->count(),
+            'total_hadir' => $totalKehadiran,
             'hadir_bulan_ini' => Attendance::where('athlete_id', $user->id)->where('tanggal', '>=', now()->startOfMonth())->count(),
             'latihan_terakhir' => $attendances->first()?->tanggal ?? '-',
         ];
 
-        return view('athlete.dashboard', compact('user', 'attendances', 'stats'));
+        return view('athlete.dashboard', compact('user', 'attendances', 'stats', 'totalKehadiran'));
     }
 
     /**

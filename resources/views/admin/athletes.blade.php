@@ -110,6 +110,11 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($athletes as $index => $athlete)
+                        @php
+                            $totalCount = $athlete->attendances_count ?? 0;
+                            // Menghitung siklus presensi (1 - 4). Jika total 0, maka siklus 0.
+                            $cycleSession = ($totalCount > 0) ? (($totalCount % 4 == 0) ? 4 : ($totalCount % 4)) : 0;
+                        @endphp
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -119,8 +124,8 @@
                             
                             {{-- KOLOM TOTAL PRESENSI --}}
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ ($athlete->attendances_count ?? 0) >= 8 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $athlete->attendances_count ?? 0 }} / 4 Sesi
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $cycleSession == 4 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ $cycleSession }} / 4 Sesi
                                 </span>
                             </td>
                             
@@ -131,14 +136,6 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ Str::limit($athlete->address ?? '-', 20) }}</td>
                             
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                {{-- TOMBOL RESET PRESENSI (SETELAH BAYAR) --}}
-                                <form action="{{ route('admin.athletes.reset-attendance', $athlete->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Konfirmasi: Atlet ini sudah membayar dan presensi akan direset ke 0?')">
-                                    @csrf
-                                    <button type="submit" class="text-emerald-600 hover:text-emerald-900 mx-1 p-2 rounded-full hover:bg-emerald-50 transition duration-150" title="Reset Presensi (Sudah Bayar)">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                    </button>
-                                </form>
-
                                 {{-- Tombol Hapus --}}
                                 <form action="{{ route('admin.athletes.destroy', $athlete->id) }}" method="POST" class="inline-block" onsubmit="return showConfirmDelete(event);">
                                     @csrf

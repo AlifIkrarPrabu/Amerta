@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User; 
-use App\Models\Attendance; // Import Model Attendance
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB; 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class AthleteController extends Controller
@@ -19,7 +16,6 @@ class AthleteController extends Controller
     public function index()
     {
         // Mengambil user dengan role 'atlet' dan menghitung relasi 'attendances'
-        // Nama relasi harus sama dengan fungsi di User.php yaitu attendances()
         $athletes = User::where('role', 'atlet')
             ->withCount('attendances') 
             ->get();
@@ -61,33 +57,10 @@ class AthleteController extends Controller
             return redirect()->route('admin.athletes.index')->with('error', 'Tidak dapat menghapus. Pengguna bukan atlet.');
         }
 
-        // Karena atlet dihapus, sebaiknya presensinya juga dihapus otomatis
+        // Hapus data presensi terkait sebelum menghapus akun atlet
         $athlete->attendances()->delete();
         $athlete->delete();
 
         return redirect()->route('admin.athletes.index')->with('success', 'Akun Atlet berhasil dihapus.');
-    }
-
-    /**
-     * Fitur Konfirmasi Pembayaran: Reset Kehadiran menjadi 0
-     */
-    public function resetAttendance($id)
-    {
-        try {
-            // 1. Cari user berdasarkan ID
-            $athlete = User::where('id', $id)->where('role', 'atlet')->firstOrFail();
-
-            // 2. Jalankan penghapusan data presensi melalui relasi hasMany
-            // Ini akan menghapus semua baris di tabel attendances yang memiliki athlete_id = $id
-            $athlete->attendances()->delete();
-
-            // 3. Kembali ke halaman index dengan pesan sukses
-            return redirect()->route('admin.athletes.index')
-                             ->with('success', "Presensi untuk atlet {$athlete->name} berhasil direset menjadi 0.");
-
-        } catch (\Exception $e) {
-            Log::error("Gagal reset presensi ID {$id}: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal meriset data presensi. Silakan coba lagi.');
-        }
     }
 }

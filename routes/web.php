@@ -50,7 +50,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/reports/coaches', [CoachAttendanceController::class, 'index'])->name('reports.coaches');
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
-    Route::post('athletes/{id}/reset-attendance', [AdminAthleteController::class, 'resetAttendance'])->name('athletes.reset-attendance');
     Route::resource('users', UserController::class); 
 });
 
