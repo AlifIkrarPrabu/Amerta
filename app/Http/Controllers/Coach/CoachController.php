@@ -40,7 +40,7 @@ class CoachController extends Controller
     }
 
     /**
-     * Menyimpan data presensi
+     * Menyimpan data presensi dengan proteksi 1 kali latihan per hari untuk atlet
      */
     public function store(Request $request)
     {
@@ -52,18 +52,47 @@ class CoachController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($request) {
+            $savedCount = 0;
+            $skippedAthletes = [];
+
+            DB::transaction(function () use ($request, &$savedCount, &$skippedAthletes) {
                 foreach ($request->athletes as $athleteId) {
-                    Attendance::create([
-                        'coach_id' => Auth::id(),
-                        'athlete_id' => $athleteId,
-                        'tanggal' => $request->tanggal,
-                        'tempat' => $request->tempat,
-                        'materi' => $request->materi ?? '-',
-                        'evaluation' => $request->evaluation,
-                    ]);
+                    
+                    // Pengecekan: Apakah atlet ini sudah memiliki catatan presensi di tanggal yang sama?
+                    $alreadyAttended = Attendance::where('athlete_id', $athleteId)
+                        ->where('tanggal', $request->tanggal)
+                        ->exists();
+
+                    if (!$alreadyAttended) {
+                        Attendance::create([
+                            'coach_id'   => Auth::id(),
+                            'athlete_id' => $athleteId,
+                            'tanggal'    => $request->tanggal,
+                            'tempat'     => $request->tempat,
+                            'materi'     => $request->materi ?? '-',
+                            'evaluation' => $request->evaluation,
+                        ]);
+                        $savedCount++;
+                    } else {
+                        // Catat nama atlet yang dilewati
+                        $athlete = User::find($athleteId);
+                        if ($athlete) {
+                            $skippedAthletes[] = $athlete->name;
+                        }
+                    }
                 }
             });
+
+            // Respon jika semua atlet sudah di-absen sebelumnya
+            if ($savedCount === 0 && !empty($skippedAthletes)) {
+                return redirect()->back()->with('error', 'Gagal menyimpan. Atlet yang dipilih (' . implode(', ', $skippedAthletes) . ') sudah memiliki data presensi pada tanggal tersebut.');
+            }
+
+            // Respon jika sebagian berhasil dan sebagian dilewati
+            if (!empty($skippedAthletes)) {
+                $skippedNames = implode(', ', $skippedAthletes);
+                return redirect()->back()->with('success', "Presensi berhasil disimpan untuk {$savedCount} atlet. Catatan: Atlet ({$skippedNames}) dilewati karena sudah di-absen oleh pelatih lain pada tanggal tersebut.");
+            }
 
             return redirect()->back()->with('success', 'Presensi berhasil disimpan.');
             
@@ -73,7 +102,7 @@ class CoachController extends Controller
     }
 
     /**
-     * Menhapus satu sesi presensi
+     * Menghapus satu sesi presensi
      */
     public function destroy(Request $request)
     {
