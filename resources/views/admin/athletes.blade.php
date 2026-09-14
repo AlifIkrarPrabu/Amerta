@@ -102,7 +102,28 @@
         @endif
 
         <div class="bg-white p-6 rounded-2xl shadow-lg overflow-x-auto">
-            <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Daftar Atlet D'Amerta Swim</h2>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800">Daftar Atlet D'Amerta Swim</h2>
+                
+                {{-- Form Pencarian Atlet --}}
+                <form action="{{ route('admin.athletes.index') }}" method="GET" class="flex items-center gap-2 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama / no. telp..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-teal-700 transition duration-150">
+                        Cari
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.athletes.index') }}" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-gray-300 transition duration-150" title="Reset Pencarian">
+                            Reset
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -122,7 +143,10 @@
                             $cycleSession = ($totalCount > 0) ? (($totalCount % 4 == 0) ? 4 : ($totalCount % 4)) : 1;
                         @endphp
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
+                            {{-- Nomor berurutan menyesuaikan halaman pagination --}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ $athletes->firstItem() + $index }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <div class="font-bold">{{ $athlete->name }}</div>
                                 <div class="text-xs text-gray-500">{{ $athlete->phone_number ?? '-' }}</div>
@@ -163,11 +187,22 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada data atlet yang terdaftar.</td>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                @if(request('search'))
+                                    Data atlet dengan pencarian "{{ request('search') }}" tidak ditemukan.
+                                @else
+                                    Belum ada data atlet yang terdaftar.
+                                @endif
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+
+            {{-- Navigasi / Link Pagination --}}
+            <div class="mt-4">
+                {{ $athletes->links() }}
+            </div>
         </div>
     </main>
 

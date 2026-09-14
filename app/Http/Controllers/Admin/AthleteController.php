@@ -12,19 +12,28 @@ use Illuminate\Validation\Rule;
 class AthleteController extends Controller
 {
     /**
-     * Menampilkan daftar semua pengguna dengan peran 'atlet'.
+     * Menampilkan daftar semua pengguna dengan peran 'atlet' beserta fitur pencarian dan pagination.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Mengambil user dengan role 'atlet' dan menghitung relasi 'attendances'
+        $search = $request->input('search');
+
+        // Mengambil user dengan role 'atlet', memfilter jika ada pencarian, dan membuat pagination 5 data per halaman
         $athletes = User::where('role', 'atlet')
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('phone_number', 'like', "%{$search}%");
+                });
+            })
             ->withCount('attendances') 
-            ->get();
+            ->paginate(5)
+            ->withQueryString(); // Mempertahankan parameter 'search' di URL saat berpindah halaman
 
         // Mengambil daftar pelatih untuk dropdown di modal penyesuaian presensi
         $coaches = User::where('role', 'pelatih')->get();
 
-        return view('admin.athletes', compact('athletes', 'coaches')); 
+        return view('admin.athletes', compact('athletes', 'coaches', 'search')); 
     }
 
     /**
