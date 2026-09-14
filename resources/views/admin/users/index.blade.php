@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Akun - D'Amerta Swim</title>
-    <!-- Tambahkan CSRF Token di head untuk AJAX -->
     <meta name="csrf-token" content="{{ csrf_token() }}"> 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,7 +13,6 @@
             font-family: 'Poppins', sans-serif;
             background-color: #f4f7f6;
         }
-        /* Style untuk modal custom (Tailwind only) */
         .modal {
             transition: opacity 0.25s ease;
         }
@@ -25,7 +23,6 @@
             transition: transform 0.3s ease-in-out;
         }
     </style>
-    <!-- Memastikan JQuery dimuat untuk fungsionalitas AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="flex min-h-screen">
@@ -49,7 +46,7 @@
                         <i class="fas fa-swimmer mr-3"></i> Kelola Atlet
                     </a>
                 </li>
-                   <li class="mb-2">
+                <li class="mb-2">
                     <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl bg-teal-700 hover:bg-teal-800 transition duration-150 font-semibold">
                         <i class="fas fa-user-lock mr-3"></i> Kelola Akun
                     </a>
@@ -83,7 +80,6 @@
 
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-0">Kelola Akun Pengguna</h1>
-            <!-- Menggunakan tombol yang sama untuk modal "Buat Akun Baru" -->
             <button id="openModalBtn" class="bg-teal-600 text-white px-6 py-2 rounded-full font-semibold shadow-md hover:bg-teal-700 transition duration-200 flex items-center w-full sm:w-auto justify-center">
                 <i class="fas fa-plus mr-2"></i> Buat Akun Baru
             </button>
@@ -101,7 +97,6 @@
             </div>
         @endif
         @if ($errors->any())
-            <!-- Pengecekan error untuk form STORE (Buat Akun) -->
             @php
                 $isStoreError = false;
                 $storeErrors = ['role', 'name', 'phone', 'password']; 
@@ -124,6 +119,28 @@
             @endif
         @endif
 
+        {{-- Form Pencarian --}}
+        <div class="bg-white p-4 rounded-2xl shadow-md mb-6">
+            <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full sm:w-80">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau no. HP..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-teal-500 focus:border-teal-500 text-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button type="submit" class="bg-teal-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-teal-700 transition duration-150 text-sm w-full sm:w-auto">
+                        Cari
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.users.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-300 transition duration-150 text-sm flex items-center justify-center">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         {{-- Tabel Daftar Akun --}}
         <div class="bg-white p-6 rounded-2xl shadow-lg overflow-x-auto"> 
             <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Daftar Akun Pelatih & Atlet</h2>
@@ -137,58 +154,53 @@
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($users as $user)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $user->name }}</td>
-                                
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                    {{ $user->phone_number ?? '-' }} 
-                                </td>
-                                
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {{ $user->role == 'pelatih' ? 'bg-blue-100 text-blue-800' : ($user->role == 'admin' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
-                                        {{ ucfirst($user->role) }}
-                                    </span>
-                                </td>
-                                
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                    {{-- Tombol Edit - Memicu Modal Edit --}}
-                                    <!-- Mengganti link href dengan class dan data attribute -->
-                                    <button type="button" 
-                                            class="text-blue-600 hover:text-blue-900 inline-block mr-3 btn-edit-user" 
-                                            title="Edit Akun" 
-                                            data-id="{{ $user->id }}"
-                                            data-edit-route="{{ route('admin.users.edit', $user->id) }}"
-                                            data-update-route="{{ route('admin.users.update', $user->id) }}">
-                                        <i class="fas fa-edit w-5 h-5"></i>
-                                    </button>
-                                    
-                                    {{-- Form Hapus (Ikon Sampah) - Akan dipicu oleh JS untuk menggunakan Modal --}}
-                                    <form id="delete-form-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block delete-user-form" data-user-name="{{ $user->name }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" title="Hapus Akun" class="text-red-600 hover:text-red-900 delete-button">
-                                            <i class="fas fa-trash-alt w-5 h-5"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($users as $user)
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">Belum ada akun Pelatih atau Atlet yang terdaftar.</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $users->firstItem() + $loop->index }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $user->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ $user->phone_number ?? '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {{ $user->role == 'pelatih' ? 'bg-blue-100 text-blue-800' : ($user->role == 'admin' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
+                                    {{ ucfirst($user->role) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button type="button" 
+                                        class="text-blue-600 hover:text-blue-900 inline-block mr-3 btn-edit-user" 
+                                        title="Edit Akun" 
+                                        data-id="{{ $user->id }}"
+                                        data-edit-route="{{ route('admin.users.edit', $user->id) }}"
+                                        data-update-route="{{ route('admin.users.update', $user->id) }}">
+                                    <i class="fas fa-edit w-5 h-5"></i>
+                                </button>
+                                
+                                <form id="delete-form-{{ $user->id }}" action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block delete-user-form" data-user-name="{{ $user->name }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" title="Hapus Akun" class="text-red-600 hover:text-red-900 delete-button">
+                                        <i class="fas fa-trash-alt w-5 h-5"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
-                        @endforelse
-                    </tbody>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada data pengguna yang ditemukan.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
             </table>
+
+            {{-- Link Pagination --}}
+            <div class="mt-6">
+                {{ $users->links() }}
+            </div>
         </div>
     </main>
 
-    <!-- ========================================================================= -->
-    <!-- Modal Buat Akun Baru (Modal Store) -->
-    <!-- ========================================================================= -->
+    <!-- Modal Buat Akun Baru -->
     <div id="userModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center opacity-0 pointer-events-none p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 transform transition-transform duration-300 scale-95 modal-content">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -198,7 +210,6 @@
             
             <form action="{{ route('admin.users.store') }}" method="POST">
                 @csrf
-                <!-- Tampilkan error validasi Laravel di form ini jika ada -->
                 @if ($errors->any())
                     <div id="store-errors" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                         <ul class="mt-2 list-disc list-inside text-sm">
@@ -223,7 +234,6 @@
                 </div>
                 <div class="mb-4">
                     <label for="phone" class="block text-gray-700 font-semibold mb-2">Nomor HP (Digunakan untuk Login)</label>
-                    <!-- Menggunakan nama 'phone' di sini, tapi di controller divalidasi ke 'phone_number' di DB -->
                     <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
                 </div>
                 <div class="mb-4">
@@ -242,9 +252,7 @@
         </div>
     </div>
     
-    <!-- ========================================================================= -->
-    <!-- Modal Edit Pengguna (Modal Update) -->
-    <!-- ========================================================================= -->
+    <!-- Modal Edit Pengguna -->
     <div id="editUserModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center opacity-0 pointer-events-none p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 transform transition-transform duration-300 scale-95 modal-content">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -252,7 +260,6 @@
                 <button type="button" id="closeEditModalBtn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
             </div>
             
-            <!-- Form ini akan diisi action URL-nya oleh JavaScript -->
             <form id="editUserForm" method="POST">
                 @csrf
                 @method('PUT')
@@ -292,7 +299,7 @@
         </div>
     </div>
     
-    {{-- Modal Konfirmasi Hapus (Tidak Berubah) --}}
+    {{-- Modal Konfirmasi Hapus --}}
     <div id="confirmModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center opacity-0 pointer-events-none p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 transform transition-transform duration-300 scale-95 modal-content">
             <h3 class="text-xl font-bold text-red-600 mb-4">Konfirmasi Hapus Akun</h3>
@@ -305,7 +312,6 @@
     </div>
 
     <script>
-        // Logika Sidebar Mobile (Tetap)
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         let isSidebarOpen = false;
@@ -329,8 +335,6 @@
             }
         });
 
-
-        // Logika untuk Modal Tambah Akun (Tetap)
         const storeModal = document.getElementById('userModal');
         const openStoreModalBtn = document.getElementById('openModalBtn');
         const closeStoreModalBtn = document.getElementById('closeModalBtn');
@@ -352,26 +356,22 @@
         openStoreModalBtn.addEventListener('click', showStoreModal);
         closeStoreModalBtn.addEventListener('click', hideStoreModal);
         
-        // Menampilkan modal Store secara otomatis jika ada error validasi
         @if($errors->any())
             @if($isStoreError)
                 showStoreModal();
             @endif
         @endif
 
-        // Logika untuk Modal Edit Pengguna (AJAX)
         const editModal = document.getElementById('editUserModal');
         const closeEditModalBtn = document.getElementById('closeEditModalBtn');
         const editUserForm = document.getElementById('editUserForm');
 
-        // Fungsi untuk menampilkan Modal Edit
         function showEditModal() {
             editModal.classList.remove('opacity-0', 'pointer-events-none');
             editModal.querySelector('.modal-content').classList.remove('scale-95');
             editModal.querySelector('.modal-content').classList.add('scale-100');
         }
 
-        // Fungsi untuk menyembunyikan Modal Edit
         function hideEditModal() {
             editModal.querySelector('.modal-content').classList.remove('scale-100');
             editModal.querySelector('.modal-content').classList.add('scale-95');
@@ -382,31 +382,25 @@
 
         closeEditModalBtn.addEventListener('click', hideEditModal);
 
-        // Event listener untuk tombol Edit
         $('.btn-edit-user').on('click', function() {
             const userId = $(this).data('id');
             const editRoute = $(this).data('edit-route');
             const updateRoute = $(this).data('update-route');
 
-            // 1. Atur action form modal ke route update yang benar
             $('#editUserForm').attr('action', updateRoute);
 
-            // 2. Ambil data pengguna via AJAX (ke route users/{user}/edit)
             $.ajax({
                 url: editRoute, 
                 method: 'GET',
                 dataType: 'json',
                 success: function(user) {
-                    // 3. Isi form di modal dengan data pengguna yang diterima dari JSON
                     $('#edit_name').val(user.name);
                     $('#edit_phone_number').val(user.phone_number);
                     $('#edit_role').val(user.role);
                     
-                    // 4. Kosongkan field password dan konfirmasi
                     $('#edit_password').val('');
                     $('#edit_password_confirmation').val('');
                     
-                    // 5. Tampilkan Modal
                     showEditModal(); 
                 },
                 error: function(xhr, status, error) {
@@ -416,14 +410,12 @@
             });
         });
 
-        // Logika untuk Modal Konfirmasi Hapus (Tetap)
         const confirmModal = document.getElementById('confirmModal');
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const confirmUserName = document.getElementById('confirmUserName');
         let formToSubmit = null; 
 
-        // Fungsi untuk menampilkan modal konfirmasi
         function showConfirmDelete(form, userName) {
             formToSubmit = form; 
             confirmUserName.textContent = userName;
@@ -433,17 +425,15 @@
             confirmModal.querySelector('.modal-content').classList.add('scale-100');
         }
 
-        // Fungsi untuk menyembunyikan modal konfirmasi
         function hideConfirmModal() {
             confirmModal.querySelector('.modal-content').classList.remove('scale-100');
             confirmModal.querySelector('.modal-content').classList.add('scale-95');
             setTimeout(() => {
                 confirmModal.classList.add('opacity-0', 'pointer-events-none');
-                formToSubmit = null; // Reset form
+                formToSubmit = null; 
             }, 300);
         }
 
-        // Delegasi event listener untuk semua tombol hapus
         document.addEventListener('click', function(event) {
             if (event.target.closest('.delete-button')) {
                 event.preventDefault(); 
@@ -454,10 +444,8 @@
             }
         });
 
-        // Event listener untuk tombol Batal
         cancelDeleteBtn.addEventListener('click', hideConfirmModal);
 
-        // Event listener untuk tombol Hapus (konfirmasi)
         confirmDeleteBtn.addEventListener('click', () => {
             if (formToSubmit) {
                 formToSubmit.submit(); 

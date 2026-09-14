@@ -11,19 +11,25 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * Menampilkan daftar semua pengguna.
+     * Menampilkan daftar semua pengguna dengan fitur pencarian & pagination.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('name', 'asc')->get();
-        // Anda mungkin ingin mengecualikan akun admin dari daftar kecuali Anda ingin bisa mengeditnya juga
-        // $users = User::where('role', '!=', 'admin')->orderBy('name', 'asc')->get();
-        return view('admin.users.index', compact('users'));
+        $search = $request->input('search');
+
+        $users = User::when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%")
+                         ->orWhere('phone_number', 'like', "%{$search}%");
+        })
+        ->orderBy('name', 'asc')
+        ->paginate(5)
+        ->withQueryString(); // Memastikan parameter search tetap ada saat klik halaman lain
+
+        return view('admin.users.index', compact('users', 'search'));
     }
 
     /**
      * Menampilkan form untuk membuat akun baru.
-     * (Anda bisa menghapus metode ini jika form create sudah berada di modal index, tapi saya biarkan)
      */
     public function create()
     {
@@ -44,7 +50,7 @@ class UserController extends Controller
 
         User::create([
             'name' => $validatedData['name'],
-            'phone_number' => $validatedData['phone'], // Pastikan nama kolom di DB adalah 'phone_number'
+            'phone_number' => $validatedData['phone'],
             'role' => $validatedData['role'],
             'password' => Hash::make($validatedData['password']),
         ]);
@@ -54,11 +60,9 @@ class UserController extends Controller
 
     /**
      * Mengembalikan data pengguna dalam format JSON (untuk diisi ke dalam modal Edit).
-     * Ini menggantikan pengembalian view 'admin.users.edit' Anda sebelumnya.
      */
     public function edit(User $user)
     {
-        // Langsung mengembalikan model $user sebagai respons JSON
         return response()->json($user);
     }
 
@@ -67,16 +71,13 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        // 1. Validasi data
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            // Pastikan phone_number unik, kecuali untuk pengguna yang sedang diedit
             'phone_number' => ['required', 'string', 'max:15', Rule::unique('users')->ignore($user->id)], 
-            'role' => 'required|in:pelatih,atlet,admin', // Sesuaikan peran yang ada
-            'password' => 'nullable|string|min:8|confirmed', // Jika ingin ganti password
+            'role' => 'required|in:pelatih,atlet,admin',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
         
-        // 2. Update data
         $user->name = $validatedData['name'];
         $user->phone_number = $validatedData['phone_number'];
         $user->role = $validatedData['role'];
