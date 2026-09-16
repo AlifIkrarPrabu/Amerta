@@ -19,7 +19,8 @@ class CoachController extends Controller
     {
         $user = Auth::user();
         
-        $athletes = User::where('role', 'atlet')->get();
+        // Pagination atlet 5 per halaman dengan mempertahankan query string
+        $athletes = User::where('role', 'atlet')->paginate(5)->withQueryString();
 
         // Mengambil riwayat presensi yang dikelompokkan berdasarkan sesi
         $attendanceHistory = Attendance::where('coach_id', Auth::id())
@@ -29,7 +30,7 @@ class CoachController extends Controller
             ->get();
 
         $stats = [
-            'total_athletes' => $athletes->count(),
+            'total_athletes' => $athletes->total(),
             'sessions_this_week' => Attendance::where('coach_id', Auth::id())
                 ->whereBetween('tanggal', [now()->startOfWeek(), now()->endOfWeek()])
                 ->distinct('tanggal')
@@ -124,7 +125,7 @@ class CoachController extends Controller
     public function reportIndex(Request $request)
     {
         $user = Auth::user();
-        $selectedMonth = $request->get('bulan', date('Y-m')); // Default bulan ini
+        $selectedMonth = $request->get('bulan', date('Y-m'));
 
         $athletes = User::where('role', 'atlet')->get();
 

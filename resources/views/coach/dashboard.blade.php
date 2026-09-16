@@ -41,6 +41,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="flex items-center gap-2">
             <span class="text-xs md:text-sm font-bold border-r border-blue-400 pr-3 mr-1 text-gray-600 uppercase tracking-wider">
                 Halooo, Coach {{ Auth::user()->name ?? 'Pelatih' }}
@@ -126,6 +132,12 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            <!-- Pagination Atlet -->
+                            <div class="px-6 py-3 border-t bg-white">
+                                {{ $athletes->links() }}
+                            </div>
+
                             <div class="p-6 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div class="text-gray-700">
                                     <span class="text-sm">Total Terpilih:</span>
@@ -166,7 +178,7 @@
 
             <div id="historyContainer">
                 @forelse($groupedHistory as $monthYear => $items)
-                    <div id="history-{{ Str::slug($monthYear) }}" class="month-section active bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                    <div id="history-{{ Str::slug($monthYear) }}" class="month-section bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
                         <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                             <span class="font-bold text-blue-700 uppercase text-sm tracking-widest">{{ $monthYear }}</span>
                             <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded font-bold">{{ $items->count() }} Sesi</span>
@@ -249,6 +261,39 @@
                 });
             }
         }
+
+        // Set Otomatis Filter ke Bulan Saat Ini saat Halaman Dimuat
+        document.addEventListener("DOMContentLoaded", function () {
+            const select = document.getElementById('historyMonthFilter');
+            
+            // Format slug bulan & tahun saat ini (misal: "september-2026")
+            const now = new Date();
+            const currentMonthName = now.toLocaleString('id-ID', { month: 'long' }).toLowerCase();
+            const currentYear = now.getFullYear();
+            const currentSlug = `${currentMonthName}-${currentYear}`;
+
+            let matchedValue = null;
+
+            // Cari apakah opsi bulan ini ada di dropdown
+            for (let option of select.options) {
+                if (option.value === currentSlug) {
+                    matchedValue = option.value;
+                    break;
+                }
+            }
+
+            // Jika ada riwayat di bulan ini, pilih opsi tersebut. Jika tidak ada, fallback ke opsi pertama (misal: "Semua Riwayat" atau bulan terbaru yang ada)
+            if (matchedValue) {
+                select.value = matchedValue;
+                filterHistoryMonth(matchedValue);
+            } else if (select.options.length > 1) {
+                // Pilih bulan paling baru (opsi kedua jika opsi pertama adalah 'all')
+                select.selectedIndex = 1;
+                filterHistoryMonth(select.value);
+            } else {
+                filterHistoryMonth('all');
+            }
+        });
 
         function toggleRow(row) {
             const checkbox = row.querySelector('.athlete-checkbox');
