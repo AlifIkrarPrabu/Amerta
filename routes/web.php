@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\AthleteController as AdminAthleteController; 
 use App\Http\Controllers\Admin\UserController; 
 use App\Http\Controllers\Admin\CoachAttendanceController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Coach\CoachController;
 use App\Http\Controllers\Athlete\AthleteController as UserAthleteController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('athletes', AdminAthleteController::class)->only(['index', 'store', 'destroy']);
     
     Route::resource('users', UserController::class);
+
+    // Rute Baru Kelola Pembayaran SPP Atlet oleh Admin
+    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments', [AdminPaymentController::class, 'store'])->name('payments.store');
+    Route::delete('/payments/{id}', [AdminPaymentController::class, 'destroy'])->name('payments.destroy');
 });
 
 // --- Rute Profil Pengguna ---

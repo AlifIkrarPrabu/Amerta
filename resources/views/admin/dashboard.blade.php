@@ -14,7 +14,7 @@
 </head>
 <body class="flex min-h-screen overflow-x-hidden">
 
-    {{-- Sidebar Overlay --}}
+{{-- Sidebar Overlay --}}
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
     {{-- Sidebar --}}
@@ -37,6 +37,11 @@
                 <li class="mb-2">
                     <a href="{{ route('admin.athletes.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.athletes.*') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
                         <i class="fas fa-swimmer mr-3"></i> Kelola Atlet
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="{{ route('admin.payments.index') }}" class="flex items-center p-3 rounded-xl {{ Request::routeIs('admin.payments.*') ? 'bg-teal-700 font-semibold' : 'hover:bg-teal-700' }} transition duration-150">
+                        <i class="fas fa-wallet mr-3"></i> Pembayaran SPP
                     </a>
                 </li>
                 <li class="mb-2">

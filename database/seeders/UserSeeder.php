@@ -20,11 +20,11 @@ class UserSeeder extends Seeder
             'name' => 'Owner Alif M.kom',
             'email' => 'admin@damerta.com', 
             // *** NOMOR HP INI ADALAH KREDENSIAL LOGIN ANDA ***
-            'phone' => '081234567890', 
+            'phone_number' => '081234567890', 
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
         
-        // PENTING: Pastikan kolom 'phone' dan 'role' ada di $fillable di model App\Models\User
+        // PENTING: Pastikan kolom 'phone_number' dan 'role' ada di $fillable di model App\Models\User
     }
 }

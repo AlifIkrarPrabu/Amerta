@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Athlete;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Payment;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,12 +80,18 @@ class AthleteController extends Controller
     }
 
     /**
-     * Menampilkan Halaman Informasi Pembayaran
+     * Menampilkan Halaman Informasi & Riwayat Pembayaran Atlet
      */
     public function payment()
     {
         $user = Auth::user();
 
-        return view('athlete.payment', compact('user'));
+        // Mengambil riwayat pembayaran atlet yang sedang login
+        $payments = Payment::where('athlete_id', $user->id)
+            ->orderBy('bulan_tahun', 'desc')
+            ->orderBy('tanggal_bayar', 'desc')
+            ->get();
+
+        return view('athlete.payment', compact('user', 'payments'));
     }
 }

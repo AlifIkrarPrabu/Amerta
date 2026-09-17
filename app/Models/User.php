@@ -45,4 +45,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class, 'athlete_id');
     }
+
+    // Relasi ke Pembayaran SPP (Sebagai Atlet)
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'athlete_id');
+    }
 }
