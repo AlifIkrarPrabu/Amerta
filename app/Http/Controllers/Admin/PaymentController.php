@@ -14,7 +14,11 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        $athletes = User::where('role', 'atlet')->orderBy('name', 'asc')->get();
+        // Mengambil seluruh data atlet untuk disuplai ke JavaScript Autocomplete Search
+        $athletes = User::where('role', 'atlet')
+            ->select('id', 'name')
+            ->orderBy('name', 'asc')
+            ->get();
         
         $selectedMonth = $request->get('bulan', date('Y-m'));
 
@@ -39,6 +43,9 @@ class PaymentController extends Controller
             'jumlah' => 'required|numeric|min:0',
             'metode_pembayaran' => 'required|in:Cash,Transfer',
             'catatan' => 'nullable|string|max:255',
+        ], [
+            'athlete_id.required' => 'Silakan cari dan pilih nama atlet terlebih dahulu.',
+            'athlete_id.exists' => 'Data atlet yang dipilih tidak valid.'
         ]);
 
         try {
@@ -46,7 +53,7 @@ class PaymentController extends Controller
                 'athlete_id' => $request->athlete_id,
                 'bulan_tahun' => $request->bulan_tahun,
                 'tanggal_bayar' => $request->tanggal_bayar,
-                'jumlah' => $request->jumlah,
+                'jumlah' => (int) round($request->jumlah),
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'status' => 'Lunas',
                 'catatan' => $request->catatan,

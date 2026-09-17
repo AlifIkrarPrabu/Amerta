@@ -46,14 +46,31 @@
                 <form action="{{ route('admin.payments.store') }}" method="POST" class="space-y-4">
                     @csrf
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Atlet</label>
-                        <select name="athlete_id" required class="w-full border-gray-300 rounded-lg p-2.5 border focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">-- Pilih Atlet --</option>
-                            @foreach($athletes as $athlete)
-                                <option value="{{ $athlete->id }}">{{ $athlete->name }}</option>
-                            @endforeach
-                        </select>
+                    <!-- Autocomplete Search Atlet -->
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cari Atlet</label>
+                        
+                        <!-- Hidden input untuk menyimpan ID Atlet yang dipilih -->
+                        <input type="hidden" name="athlete_id" id="selected_athlete_id" required>
+
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="athlete_search" 
+                                placeholder="Ketik nama atlet untuk mencari..." 
+                                autocomplete="off"
+                                class="w-full border-gray-300 rounded-lg p-2.5 pl-9 border focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            >
+                            <i class="fas fa-search absolute left-3 top-3.5 text-gray-400 text-sm"></i>
+                            <button type="button" id="clear_athlete_btn" class="hidden absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown Hasil Pencarian Atlet -->
+                        <div id="athlete_results" class="hidden absolute z-30 w-full bg-white mt-1 border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto divide-y divide-gray-100 text-sm">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1" id="search_helper_text">Ketik minimal 1 karakter untuk mencari atlet.</p>
                     </div>
 
                     <div>
@@ -164,5 +181,84 @@
         </div>
 
     </main>
+
+    <!-- JavaScript Pencarian Atlet Autocomplete -->
+    <script>
+        const athletesData = @json($athletes);
+        
+        const searchInput = document.getElementById('athlete_search');
+        const hiddenIdInput = document.getElementById('selected_athlete_id');
+        const resultsContainer = document.getElementById('athlete_results');
+        const clearBtn = document.getElementById('clear_athlete_btn');
+        const helperText = document.getElementById('search_helper_text');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            resultsContainer.innerHTML = '';
+
+            if (query.length === 0) {
+                resultsContainer.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                hiddenIdInput.value = '';
+                helperText.textContent = 'Ketik minimal 1 karakter untuk mencari atlet.';
+                helperText.classList.remove('text-green-600');
+                helperText.classList.add('text-gray-500');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+
+            const filtered = athletesData.filter(athlete => 
+                athlete.name.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-3 text-gray-500 text-center">Atlet tidak ditemukan</div>`;
+            } else {
+                filtered.forEach(athlete => {
+                    const item = document.createElement('div');
+                    item.className = 'p-2.5 hover:bg-indigo-50 cursor-pointer transition flex items-center justify-between text-gray-800';
+                    item.innerHTML = `
+                        <span class="font-medium">${athlete.name}</span>
+                        <span class="text-xs text-gray-400"><i class="fas fa-check text-indigo-500 opacity-0 select-icon"></i> Pilih</span>
+                    `;
+                    item.addEventListener('click', function() {
+                        selectAthlete(athlete);
+                    });
+                    resultsContainer.appendChild(item);
+                });
+            }
+
+            resultsContainer.classList.remove('hidden');
+        });
+
+        function selectAthlete(athlete) {
+            searchInput.value = athlete.name;
+            hiddenIdInput.value = athlete.id;
+            resultsContainer.classList.add('hidden');
+            
+            helperText.textContent = `✓ Atlet terpilih: ${athlete.name}`;
+            helperText.classList.remove('text-gray-500');
+            helperText.classList.add('text-green-600');
+        }
+
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            hiddenIdInput.value = '';
+            resultsContainer.classList.add('hidden');
+            clearBtn.classList.add('hidden');
+            helperText.textContent = 'Ketik minimal 1 karakter untuk mencari atlet.';
+            helperText.classList.remove('text-green-600');
+            helperText.classList.add('text-gray-500');
+            searchInput.focus();
+        });
+
+        // Sembunyikan hasil saat mengklik luar area
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
