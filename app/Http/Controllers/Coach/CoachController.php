@@ -19,8 +19,8 @@ class CoachController extends Controller
     {
         $user = Auth::user();
         
-        // Pagination atlet 5 per halaman dengan mempertahankan query string
-        $athletes = User::where('role', 'atlet')->paginate(5)->withQueryString();
+        // Mengambil seluruh data atlet tanpa pagination agar centang/ceklis tidak hilang
+        $athletes = User::where('role', 'atlet')->orderBy('name', 'asc')->get();
 
         // Mengambil riwayat presensi yang dikelompokkan berdasarkan sesi
         $attendanceHistory = Attendance::where('coach_id', Auth::id())
@@ -30,7 +30,7 @@ class CoachController extends Controller
             ->get();
 
         $stats = [
-            'total_athletes' => $athletes->total(),
+            'total_athletes' => $athletes->count(),
             'sessions_this_week' => Attendance::where('coach_id', Auth::id())
                 ->whereBetween('tanggal', [now()->startOfWeek(), now()->endOfWeek()])
                 ->distinct('tanggal')
