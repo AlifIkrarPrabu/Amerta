@@ -79,7 +79,7 @@
                                     <td colspan="4" class="py-2.5 px-6 text-center">
                                         <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-700 uppercase tracking-wider">
                                             <i class="fas fa-flag-checkered"></i>
-                                            <span>--- BATAS AKHIR PAKET LATIHAN KE-{{ $packageNumber }} (4 SESI) ---</span>
+                                            <span>--- BATAS AKHIR PAKET LATIHAN (4 SESI) ---</span>
                                             <i class="fas fa-flag-checkered"></i>
                                         </div>
                                     </td>
