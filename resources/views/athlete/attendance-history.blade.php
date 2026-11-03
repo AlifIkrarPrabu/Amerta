@@ -60,23 +60,26 @@
 
                             @forelse($attendances as $attendance)
                                 @php
-                                    // Nomor latihan dihitung secara kronologis (Latihan 1 adalah tanggal paling tua)
+                                    // Hitung urutan kronologis keseluruhan (1, 2, 3, 4, 5, 6...)
                                     $chronologicalOrder = $totalCount - $loop->index;
                                     
-                                    // Cek apakah baris INI adalah latihan kelipatan 4 (seperti #4, #8, #12)
+                                    // Hitung sesi berulang khusus siklus paket (1, 2, 3, 4, lalu kembali ke 1, 2, 3, 4)
+                                    $cycleSession = (($chronologicalOrder - 1) % 4) + 1;
+                                    
+                                    // Cek apakah baris INI adalah akhir dari kelipatan 4 (Latihan #4 paket)
                                     $isPackageBoundary = ($chronologicalOrder % 4 == 0);
                                     
-                                    // Hitung nomor paketnya
+                                    // Hitung nomor paket ke-berapa
                                     $packageNumber = (int) ($chronologicalOrder / 4);
                                 @endphp
 
-                                {{-- SISIPKAN PENANDA DI ATAS BARIS LATIHAN KELIPATAN 4 (#4, #8, DSK) --}}
+                                {{-- SISIPKAN PENANDA DI ATAS LATIHAN #4 KELIPATAN PAKET --}}
                                 @if($isPackageBoundary)
                                 <tr class="bg-indigo-50/80 border-y-2 border-indigo-200">
                                     <td colspan="4" class="py-2.5 px-6 text-center">
                                         <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-700 uppercase tracking-wider">
                                             <i class="fas fa-flag-checkered"></i>
-                                            <span>--- BATAS AKHIR PAKET LATIHAN (4 SESI) ---</span>
+                                            <span>--- BATAS AKHIR PAKET LATIHAN KE-{{ $packageNumber }} (4 SESI) ---</span>
                                             <i class="fas fa-flag-checkered"></i>
                                         </div>
                                     </td>
@@ -87,8 +90,10 @@
                                     <td class="py-4 px-6 font-medium text-gray-700">
                                         <div class="flex items-center gap-2">
                                             <span>{{ \Carbon\Carbon::parse($attendance->tanggal)->format('d M Y') }}</span>
-                                            <span class="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-0.5 rounded-md">
-                                                Latihan #{{ $chronologicalOrder }}
+                                            
+                                            <!-- Menampilkan Latihan #1 s/d #4 (Berulang tiap paket) -->
+                                            <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-md">
+                                                Latihan #{{ $cycleSession }}
                                             </span>
                                         </div>
                                     </td>
