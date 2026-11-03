@@ -17,7 +17,6 @@
         
         <header class="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-100 relative w-full z-20">
             <div class="flex items-center space-x-3 min-w-0">
-                
                 <button id="hamburgerBtn" type="button" class="lg:hidden bg-slate-900 hover:bg-slate-800 text-white p-2.5 rounded-xl shadow-md focus:outline-none transition flex items-center justify-center flex-shrink-0 w-10 h-10" aria-label="Open Sidebar">
                     <i class="fas fa-bars text-base"></i>
                 </button>
@@ -34,27 +33,65 @@
             </div>
         </header>
 
-            <main class="flex-1 overflow-y-auto p-6 max-w-[1600px] w-full mx-auto">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-5 border-b border-gray-100 bg-gray-50/50">
-                        <h3 class="text-base font-bold text-gray-800 flex items-center">
-                            <i class="fas fa-list text-indigo-500 mr-2"></i>Semua Catatan Log Kehadiran Anda
-                        </h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50/70 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
-                                <tr>
-                                    <th class="py-3.5 px-6 font-semibold">Tanggal</th>
-                                    <th class="py-3.5 px-6 font-semibold">Evaluasi Latihan</th>
-                                    <th class="py-3.5 px-6 font-semibold">Jenis Kegiatan</th>
-                                    <th class="py-3.5 px-6 font-semibold text-center">Status</th>
+        <main class="flex-1 overflow-y-auto p-6 max-w-[1600px] w-full mx-auto">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 class="text-base font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-list text-indigo-500 mr-2"></i>Semua Catatan Log Kehadiran Anda
+                    </h3>
+                    <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 px-3 py-1 rounded-full w-fit">
+                        Total Kehadiran: {{ $attendances->count() }} Sesi
+                    </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50/70 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                            <tr>
+                                <th class="py-3.5 px-6 font-semibold">Tanggal</th>
+                                <th class="py-3.5 px-6 font-semibold">Evaluasi Latihan</th>
+                                <th class="py-3.5 px-6 font-semibold">Jenis Kegiatan</th>
+                                <th class="py-3.5 px-6 font-semibold text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm">
+                            @php
+                                $totalCount = $attendances->count();
+                            @endphp
+
+                            @forelse($attendances as $attendance)
+                                @php
+                                    // Nomor latihan dihitung secara kronologis (Latihan 1 adalah tanggal paling tua)
+                                    $chronologicalOrder = $totalCount - $loop->index;
+                                    
+                                    // Cek apakah baris INI adalah latihan kelipatan 4 (seperti #4, #8, #12)
+                                    $isPackageBoundary = ($chronologicalOrder % 4 == 0);
+                                    
+                                    // Hitung nomor paketnya
+                                    $packageNumber = (int) ($chronologicalOrder / 4);
+                                @endphp
+
+                                {{-- SISIPKAN PENANDA DI ATAS BARIS LATIHAN KELIPATAN 4 (#4, #8, DSK) --}}
+                                @if($isPackageBoundary)
+                                <tr class="bg-indigo-50/80 border-y-2 border-indigo-200">
+                                    <td colspan="4" class="py-2.5 px-6 text-center">
+                                        <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-700 uppercase tracking-wider">
+                                            <i class="fas fa-flag-checkered"></i>
+                                            <span>--- BATAS AKHIR PAKET LATIHAN (4 SESI) ---</span>
+                                            <i class="fas fa-flag-checkered"></i>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100 text-sm">
-                                @forelse($attendances as $attendance)
+                                @endif
+
                                 <tr class="hover:bg-gray-50/50 transition">
-                                    <td class="py-4 px-6 font-medium text-gray-700">{{ \Carbon\Carbon::parse($attendance->tanggal)->format('d M Y') }}</td>
+                                    <td class="py-4 px-6 font-medium text-gray-700">
+                                        <div class="flex items-center gap-2">
+                                            <span>{{ \Carbon\Carbon::parse($attendance->tanggal)->format('d M Y') }}</span>
+                                            <span class="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-0.5 rounded-md">
+                                                Latihan #{{ $chronologicalOrder }}
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td class="py-4 px-6">
                                         @if($attendance->evaluation)
                                             <div class="text-xs text-gray-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200/60 shadow-sm">
@@ -69,17 +106,19 @@
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Hadir</span>
                                     </td>
                                 </tr>
-                                @empty
+
+                            @empty
                                 <tr>
                                     <td colspan="4" class="py-10 px-6 text-center text-gray-400 italic">Belum ada riwayat data kehadiran.</td>
                                 </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+</div>
+
 </body>
 </html>

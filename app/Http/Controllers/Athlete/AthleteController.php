@@ -21,10 +21,11 @@ class AthleteController extends Controller
         // Total seluruh presensi untuk menentukan posisi dalam siklus 4 latihan
         $totalKehadiran = Attendance::where('athlete_id', $user->id)->count();
 
-        // Mengambil riwayat kehadiran khusus atlet ini (Dibatasi 3 teratas untuk ringkasan dashboard)
+        // Mengambil riwayat kehadiran khusus atlet ini (3 teratas berdasarkan tanggal terbaru)
         $attendances = Attendance::where('athlete_id', $user->id)
             ->with('coach')
             ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
             ->take(3)
             ->get();
 
@@ -45,10 +46,11 @@ class AthleteController extends Controller
     {
         $user = Auth::user();
 
-        // Menampilkan semua riwayat tanpa batasan limit, diurutkan dari yang terbaru
+        // Urutkan murni berdasarkan tanggal presensi (terbaru di paling atas)
         $attendances = Attendance::where('athlete_id', $user->id)
             ->with('coach')
             ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
 
         return view('athlete.attendance-history', compact('user', 'attendances'));
@@ -61,16 +63,13 @@ class AthleteController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil filter bulan dari URL jika ada, atau default ke bulan saat ini (Format: YYYY-MM)
         $selectedMonth = $request->get('bulan', date('Y-m'));
 
-        // Ambil data raport atlet ini berdasarkan bulan dan relasi pelatihnya
         $report = Report::where('athlete_id', $user->id)
             ->where('bulan_tahun', $selectedMonth)
             ->with('coach')
             ->first();
 
-        // Ambil daftar riwayat bulan apa saja yang pernah ada catatan raport-nya (untuk filter dropdown)
         $availableMonths = Report::where('athlete_id', $user->id)
             ->orderBy('bulan_tahun', 'desc')
             ->pluck('bulan_tahun')
@@ -86,7 +85,6 @@ class AthleteController extends Controller
     {
         $user = Auth::user();
 
-        // Mengambil riwayat pembayaran atlet yang sedang login
         $payments = Payment::where('athlete_id', $user->id)
             ->orderBy('bulan_tahun', 'desc')
             ->orderBy('tanggal_bayar', 'desc')
