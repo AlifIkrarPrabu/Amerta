@@ -17,7 +17,11 @@ return new class extends Migration
             $blueprint->date('tanggal');
             $blueprint->string('tempat');
             $blueprint->text('materi')->nullable();
+            $blueprint->text('evaluation')->nullable();
             $blueprint->timestamps();
+
+            // PENTING: Proteksi database agar 1 atlet HANYA BISA punya 1 presensi di tanggal yang sama
+            $blueprint->unique(['athlete_id', 'tanggal'], 'unique_athlete_date');
         });
     }
 

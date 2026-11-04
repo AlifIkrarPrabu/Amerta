@@ -41,7 +41,7 @@ class CoachController extends Controller
     }
 
     /**
-     * Menyimpan data presensi dengan proteksi 1 kali latihan per hari untuk atlet
+     * Menyimpan data presensi dengan proteksi ketat 1 kali latihan per hari untuk atlet
      */
     public function store(Request $request)
     {
@@ -59,7 +59,7 @@ class CoachController extends Controller
             DB::transaction(function () use ($request, &$savedCount, &$skippedAthletes) {
                 foreach ($request->athletes as $athleteId) {
                     
-                    // Pengecekan: Apakah atlet ini sudah memiliki catatan presensi di tanggal yang sama?
+                    // Pengecekan ketat: Apakah atlet ini sudah memiliki catatan presensi di tanggal yang sama?
                     $alreadyAttended = Attendance::where('athlete_id', $athleteId)
                         ->where('tanggal', $request->tanggal)
                         ->exists();
@@ -75,7 +75,7 @@ class CoachController extends Controller
                         ]);
                         $savedCount++;
                     } else {
-                        // Catat nama atlet yang dilewati
+                        // Catat nama atlet yang dilewati karena sudah ada presensi pada tanggal tersebut
                         $athlete = User::find($athleteId);
                         if ($athlete) {
                             $skippedAthletes[] = $athlete->name;
@@ -84,21 +84,21 @@ class CoachController extends Controller
                 }
             });
 
-            // Respon jika semua atlet sudah di-absen sebelumnya
+            // Respon jika semua atlet yang dipilih sudah pernah di-absen pada tanggal tersebut
             if ($savedCount === 0 && !empty($skippedAthletes)) {
-                return redirect()->back()->with('error', 'Gagal menyimpan. Atlet yang dipilih (' . implode(', ', $skippedAthletes) . ') sudah memiliki data presensi pada tanggal tersebut.');
+                return redirect()->back()->with('error', 'Gagal menyimpan. Atlet (' . implode(', ', $skippedAthletes) . ') sudah memiliki data presensi pada tanggal ' . date('d-m-Y', strtotime($request->tanggal)) . '.');
             }
 
             // Respon jika sebagian berhasil dan sebagian dilewati
             if (!empty($skippedAthletes)) {
                 $skippedNames = implode(', ', $skippedAthletes);
-                return redirect()->back()->with('success', "Presensi berhasil disimpan untuk {$savedCount} atlet. Catatan: Atlet ({$skippedNames}) dilewati karena sudah di-absen oleh pelatih lain pada tanggal tersebut.");
+                return redirect()->back()->with('success', "Presensi berhasil disimpan untuk {$savedCount} atlet. Catatan: Atlet ({$skippedNames}) dilewati karena sudah memiliki presensi pada tanggal tersebut.");
             }
 
             return redirect()->back()->with('success', 'Presensi berhasil disimpan.');
             
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan presensi: ' . $e->getMessage());
         }
     }
 
