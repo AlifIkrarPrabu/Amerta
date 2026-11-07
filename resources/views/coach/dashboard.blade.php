@@ -90,6 +90,7 @@
                                     <option value="">Pilih Lokasi</option>
                                     <option value="Pucung">Pucung</option>
                                     <option value="Tirta Santika">Tirta Santika</option>
+                                    <option value="GADINO">GADINO</option>
                                 </select>
                             </div>
 
